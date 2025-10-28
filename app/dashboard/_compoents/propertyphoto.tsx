@@ -160,7 +160,6 @@ const removePhoto = (category: string, idx: number) => {
                 <Images className="w-5 h-5 text-muted-foreground" />
                 Property Photos
               </h2>
-              <Badge variant="secondary">Step 4 of 6</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               Upload cover and gallery photos for each category.

@@ -194,7 +194,6 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
             <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold">Room Photos</h2>
-                    <Badge variant="secondary">Step 6 of 8</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Upload and manage photos for each room.

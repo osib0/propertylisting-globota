@@ -1,4 +1,6 @@
 'use client'
+
+import  { useState } from "react"
 import {
     Sidebar,
     SidebarContent,
@@ -9,7 +11,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-
 import {
     Home,
     MapPin,
@@ -20,12 +21,22 @@ import {
     CupSoda,
     FileText,
     User,
+    LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import logoIcon from '@/app/favicon.ico'
 import { useAppContext } from "@/app/contextapi"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 const menuItems = [
     { icon: Home, label: "Property Details" },
@@ -43,46 +54,89 @@ const menuItems = [
 export function CustomSidebar() {
     const { isTab, setTab } = useAppContext();
     const { data: session } = useSession();
+    const [open, setOpen] = useState(false);
+
     if (!session?.user) {
         return null
     }
 
     return (
-        <Sidebar collapsible="icon" className="bg-white">
-            <SidebarContent className="bg-white px-3">
-                <Image src={logoIcon} alt="icon" width={50} height={50} className="bg-white" />
-                <SidebarGroup>
-                    <SidebarGroupLabel>Menu</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {menuItems.map((item) => {
-                                const Icon = item.icon
-                                const isActive = isTab === item.label
+        <>
+            <Sidebar collapsible="icon" className="bg-white">
+                <SidebarContent className="bg-white px-3 flex flex-col justify-between h-full">
+                    <div>
+                        <Image src={logoIcon} alt="icon" width={50} height={50} className="bg-white mb-2" />
+                        <SidebarGroup>
+                            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {menuItems.map((item) => {
+                                        const Icon = item.icon
+                                        const isActive = isTab === item.label
 
-                                return (
-                                    <SidebarMenuItem key={item.label}>
-                                        <SidebarMenuButton
-                                            asChild
-                                            onClick={() => setTab(item.label)}
-                                            className={cn(
-                                                "flex items-center gap-3 py-2 text-sm font-medium transition-all",
-                                                isActive
-                                                    ? "text-black bg-gray-100 border-black"
-                                                    : "text-gray-600 hover:text-black hover:bg-gray-50"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-3 cursor-pointer">
-                                                <Icon size={18} />
-                                                <span>{item.label}</span>
-                                            </div>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                )
-                            })}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-        </Sidebar>
+                                        return (
+                                            <SidebarMenuItem key={item.label}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    onClick={() => setTab(item.label)}
+                                                    className={cn(
+                                                        "flex items-center gap-3 py-2 text-sm font-medium transition-all",
+                                                        isActive
+                                                            ? "text-black bg-gray-100 border-black"
+                                                            : "text-gray-600 hover:text-black hover:bg-gray-50"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-3 cursor-pointer">
+                                                        <Icon size={18} />
+                                                        <span>{item.label}</span>
+                                                    </div>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        )
+                                    })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </div>
+
+                    {/* Logout Section */}
+                    <div className="border-t pt-3">
+                        <button
+                            onClick={() => setOpen(true)}
+                            className="flex items-center gap-3 text-red-600 hover:text-red-700 text-sm font-medium w-full py-2 px-2 transition-all"
+                        >
+                            <LogOut size={18} />
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </SidebarContent>
+            </Sidebar>
+
+            {/* Confirm Logout Dialog */}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Logout</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to logout?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setOpen(false)
+                                signOut({ callbackUrl: "/sign-up" })
+                            }}
+                        >
+                            Yes, Logout
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

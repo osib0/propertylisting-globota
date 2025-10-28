@@ -91,7 +91,6 @@ export default function PropertyAmenities({
             <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold">Property Amenities</h2>
-                    <Badge variant="secondary">Step 3 of 6</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Select which amenities are available in your property.

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,6 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
     }));
   }, [selectedAmenities, setShareData]);
 
-  // ✅ Handle selection toggle
   const handleAmenityChoice = (title: string, choice: "yes" | "no") => {
     setSelectedAmenities((prev) => ({
       ...prev,
@@ -72,7 +70,6 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
     }));
   };
 
-  // ✅ Handle next button
   const handleNext = async () => {
     setLoading(true);
     setTab("Room Photo");
@@ -85,7 +82,6 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
       <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Room Amenities</h2>
-          <Badge variant="secondary">Step 6 of 8</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
           Select which amenities are available in each room.

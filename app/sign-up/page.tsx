@@ -24,6 +24,7 @@ import {
     InputOTPSeparator,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
+import toast from "react-hot-toast"
 
 const phoneSchema = z.object({
     phone: z.string()
@@ -94,11 +95,11 @@ export default function Page() {
                 setTimer(30)
                 setCanResend(false)
             } else {
-                alert(result.msg || "Failed to send OTP")
+                toast.error(result.msg || "Failed to send OTP")
             }
         } catch (error) {
             console.error(error)
-            alert("Something went wrong while sending OTP.")
+            toast.error("Something went wrong while sending OTP.")
         } finally {
             setLoading(false)
         }
@@ -127,14 +128,14 @@ export default function Page() {
                     setScreen("sign")
                 }
             } else if (data.vaild_access) {
-                alert("Invalid OTP. Try again.")
+                toast.error("Invalid OTP. Try again.")
             } else {
-                alert("OTP expired. Please try again.")
+                toast.error("OTP expired. Please try again.")
                 setScreen("phone")
             }
         } catch (error) {
             console.error(error)
-            alert("Something went wrong verifying OTP.")
+            toast.error("Something went wrong verifying OTP.")
         } finally {
             setLoading(false)
         }
@@ -163,11 +164,11 @@ export default function Page() {
                     email: values.email,
                 })
             } else {
-                alert(data.msg || "Signup failed. Please try again.")
+                toast.error(data.msg || "Signup failed. Please try again.")
             }
         } catch (error) {
             console.error(error)
-            alert("Error during signup.")
+            toast.error("Error during signup.")
         } finally {
             setLoading(false)
         }
@@ -186,13 +187,13 @@ export default function Page() {
                 setSentOtp(result.data?.otp)
                 setTimer(30)
                 setCanResend(false)
-                alert("OTP resent successfully!")
+                toast.success("OTP resent successfully!")
             } else {
-                alert("Failed to resend OTP.")
+                toast.error("Failed to resend OTP.")
             }
         } catch (error) {
             console.error(error)
-            alert("Error resending OTP.")
+            toast.error("Error resending OTP.")
         }
     }
 
