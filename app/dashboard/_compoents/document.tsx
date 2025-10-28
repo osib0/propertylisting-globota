@@ -151,7 +151,6 @@ const Documents: React.FC<DocumentsProps> = ({
                     <h2 className="text-2xl font-semibold flex items-center gap-2">
                         <FileText className="w-5 h-5 text-primary" /> Documents
                     </h2>
-                    <Badge variant="secondary">Verification</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Upload necessary verification documents (PDF or Images)

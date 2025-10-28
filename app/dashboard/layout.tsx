@@ -1,7 +1,7 @@
 
 
 import { CustomSidebar } from "@/components/sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 
 
@@ -14,6 +14,7 @@ export default function RootLayout({
         <main>
             <SidebarProvider>
                 <CustomSidebar />
+                 <SidebarTrigger className="fixed z-50 right-5 top-5" />
                 {children}
             </SidebarProvider>
         </main>

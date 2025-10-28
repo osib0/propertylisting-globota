@@ -15,7 +15,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "../../contextapi";
 import { Button } from "@/components/ui/button";
@@ -91,7 +90,6 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
             <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold">Location</h2>
-                    <Badge variant="secondary">Address & Map</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Provide your property address and pin it on the map.

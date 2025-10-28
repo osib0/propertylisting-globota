@@ -151,9 +151,14 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
                                 <Info className="w-5 h-5 text-muted-foreground" />
                                 Room Details
                             </h2>
-                            <Badge variant="secondary">Info & Photos</Badge>
                         </div>
-                        <Button type="button" variant="default" size="sm" onClick={() => append({
+                    </div>
+                   
+
+                    {/* Form Fields */}
+                    <div className="p-6 space-y-8">
+                        <div className="flex justify-end">
+                           <Button type="button" variant="default" size="sm" onClick={() => append({
                             roomName: "",
                             roomType: "",
                             numRooms: 1,
@@ -165,10 +170,7 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
                         })}>
                             <PlusCircle className="w-4 h-4 mr-1" /> Add Room
                         </Button>
-                    </div>
-
-                    {/* Form Fields */}
-                    <div className="p-6 space-y-8">
+                        </div>
                         {fields.map((field, index) => (
                             <Card key={field.id} className="border rounded-xl shadow-sm">
                                 <CardHeader className="flex flex-row items-center justify-between">

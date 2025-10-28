@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useAppContext } from "../../contextapi";
 
 type BedType = { type: string; count: number };
@@ -106,9 +105,13 @@ export default function SleepingArrangement({
                         <Info className="w-5 h-5 text-muted-foreground" />
                         Room Details
                     </h2>
-                    <Badge variant="secondary">Sleeping Arrangement</Badge>
                 </div>
-                <Button
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 space-y-6 p-6 bg-gray-50 max-w-3xl mx-auto">
+              <div className="flex justify-end">
+   <Button
                     type="button"
                     variant="default"
                     size="sm"
@@ -116,10 +119,7 @@ export default function SleepingArrangement({
                 >
                     <Plus className="w-4 h-4 mr-1" /> Add Bed Type
                 </Button>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 space-y-6 p-6 bg-gray-50 max-w-3xl mx-auto">
+              </div>
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                     <Bed className="w-5 h-5 text-muted-foreground" /> Sleeping Arrangement & Occupancy
                 </h3>

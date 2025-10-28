@@ -112,7 +112,6 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
             <div className="border-b bg-white py-4 px-6 sticky top-0 z-20">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold">Owner / Host Details</h2>
-                    <Badge variant="secondary">KYC & Contacts</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Provide owner’s verified contact details for communication and KYC.

@@ -62,7 +62,7 @@ export function CustomSidebar() {
 
     return (
         <>
-            <Sidebar collapsible="icon" className="bg-white">
+            <Sidebar collapsible="offcanvas" className="bg-white">
                 <SidebarContent className="bg-white px-3 flex flex-col justify-between h-full">
                     <div>
                         <Image src={logoIcon} alt="icon" width={50} height={50} className="bg-white mb-2" />
@@ -99,15 +99,14 @@ export function CustomSidebar() {
                         </SidebarGroup>
                     </div>
 
-                    <div className="border-t pt-3">
-                        <button
-                            onClick={() => setOpen(true)}
-                            className="flex items-center gap-3 text-red-600 hover:text-red-700 text-sm font-medium w-full py-2 px-2 transition-all"
-                        >
-                            <LogOut size={18} />
-                            <span>Logout</span>
-                        </button>
-                    </div>
+                    <Button
+                        onClick={() => setOpen(true)}
+                        className="mb-5"
+                        variant={'secondary'}
+                    >
+                        <LogOut size={18} />
+                        <span>Logout</span>
+                    </Button>
                 </SidebarContent>
             </Sidebar>
 
