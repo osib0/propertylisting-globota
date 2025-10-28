@@ -17,7 +17,7 @@ const Alltabs = () => {
     const { isTab } = useAppContext()
 
     return (
-        <>
+        <> 
             {isTab == 'Property Details' && (<PropertyDetails setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Location' && (<Location setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Property Amenities' && (<PropertyAmenities setShareData={setShareData} shareData={shareData} />)}
