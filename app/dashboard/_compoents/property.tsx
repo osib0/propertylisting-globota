@@ -86,9 +86,9 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
     setLoading(true);
     const valid = await form.trigger();
     if (valid) {   
-      setLoading(false);
       setTab('location')
     }
+    setLoading(false);
   };
 
   return (
