@@ -172,17 +172,17 @@ const removePhoto = (category: string, idx: number) => {
               Categories
             </h4>
 
-            <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as (typeof CATEGORIES)[number])}>
-              <TabsList className="flex flex-wrap gap-2 mb-4">
+            <Tabs value={activeCategory}  onValueChange={(val) => setActiveCategory(val as (typeof CATEGORIES)[number])}>
+              <TabsList className="flex flex-wrap gap-2 mb-4 h-full">
                 {CATEGORIES.map((cat) => (
-                  <TabsTrigger key={cat} value={cat} className="capitalize">
+                  <TabsTrigger  key={cat} value={cat} className="capitalize w-full">
                     {cat}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
               {CATEGORIES.map((cat) => (
-                <TabsContent key={cat} value={cat} className="space-y-4">
+                <TabsContent key={cat} value={cat} className="my-6">
                   <FormField
                     control={form.control}
                     name={`property_photos.${cat}`}

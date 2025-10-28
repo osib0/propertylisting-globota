@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Save } from "lucide-react";
-import { useAppContext } from "../../contextapi";
+import { useAppContext } from "@/app/contextapi";
 
 const formSchema = z.object({
   propertyTitle: z.string().min(1, "Property name is required"),
@@ -97,6 +97,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
       <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Property Details</h2>
+          <Badge variant="secondary">Step 1 of 6</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
           Tell us more about your property before we move to the next step.
