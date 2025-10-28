@@ -40,7 +40,7 @@ export default function SleepingArrangement({
     });
     const [loading, setLoading] = useState(false);
     const { setTab } = useAppContext();
-    
+
 
     // Load existing data
     useEffect(() => {
@@ -81,7 +81,7 @@ export default function SleepingArrangement({
     ];
 
     const handleBedTypeChange = (index: number, field: keyof BedType, value: any) => {
-        const updated:any = [...bedTypes];
+        const updated: any = [...bedTypes];
         updated[index][field] = value;
         setBedTypes(updated);
     };
@@ -92,7 +92,7 @@ export default function SleepingArrangement({
 
     const handleNext = async () => {
         setLoading(true);
-            setTab('Sleeping Arrangement')
+        setTab('Sleeping Arrangement')
         setLoading(false);
     };
 
@@ -110,23 +110,23 @@ export default function SleepingArrangement({
 
             {/* Main Content */}
             <div className="flex-1 space-y-6 p-6 bg-gray-50 max-w-3xl mx-auto">
-              <div className="flex justify-end">
-   <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={addBedType}
-                >
-                    <Plus className="w-4 h-4 mr-1" /> Add Bed Type
-                </Button>
-              </div>
+                <div className="flex justify-end">
+                    <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        onClick={addBedType}
+                    >
+                        <Plus className="w-4 h-4 mr-1" /> Add Bed Type
+                    </Button>
+                </div>
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                     <Bed className="w-5 h-5 text-muted-foreground" /> Sleeping Arrangement & Occupancy
                 </h3>
 
                 {bedTypes.map((bed, index) => (
                     <Card key={index} className="border rounded-xl shadow-sm">
-                        <CardHeader className="flex flex-row justify-between items-center py-3 px-4">
+                        <CardHeader className="flex flex-row justify-between items-center  px-4">
                             <h3 className="font-semibold">Bed Type {index + 1}</h3>
                             {index > 0 && (
                                 <Button
@@ -138,10 +138,10 @@ export default function SleepingArrangement({
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 pb-4">
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
                             {/* Bed Type Select */}
                             <div>
-                                <Label>Bed Type</Label>
+                                <Label className="mb-1">Bed Type</Label>
                                 <Select
                                     value={bed.type}
                                     onValueChange={(value) => handleBedTypeChange(index, "type", value)}

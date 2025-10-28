@@ -84,7 +84,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
     loading = false,
 }) => {
     const [roomPhotos, setRoomPhotos] = useState<RoomPhoto[]>([]);
-    const [uploading, setUploading] = useState(false); 
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         if (shareData?.room_detail) {
@@ -98,7 +98,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
             });
             setRoomPhotos(initialPhotos);
         }
-    }, [shareData]);
+    }, []);
 
     useEffect(() => {
         if (JSON.stringify(shareData?.room_photos) !== JSON.stringify(roomPhotos)) {
@@ -112,7 +112,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
 
     const handlePhotoUpload = async (category: string, files: File[]) => {
         if (files.length === 0) return;
-        setUploading(true); 
+        setUploading(true);
 
         for (const file of files) {
             const tempUrl = URL.createObjectURL(file);
@@ -166,7 +166,6 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
             }
         }
 
-        // ✅ Wait 500ms to show user feedback before marking complete
         setTimeout(() => setUploading(false), 500);
     };
 
@@ -190,7 +189,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
 
     return (
         <div className="relative flex flex-col min-h-screen bg-muted/10 w-full">
-            {/* ✅ Header */}
+            {/*  Header */}
             <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-semibold">Room Photos</h2>
@@ -200,7 +199,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
                 </p>
             </div>
 
-            {/* ✅ Content */}
+            {/*  Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 {roomPhotos.map((room, idx) => (
                     <Card key={idx} className="shadow-sm">
@@ -213,26 +212,26 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
                                 <Badge variant="outline">Cover + Gallery</Badge>
                             </div>
 
-                            {/* ✅ Dropzone */}
+                            {/*  Dropzone */}
                             <Dropzone
                                 onFiles={(files) => handlePhotoUpload(room.category, files)}
                                 note="Upload high-quality JPG, PNG, or WebP images."
                             />
 
-                            {/* ✅ Photo Grid */}
+                            {/*  Photo Grid */}
                             {room.photos.length > 0 && (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                     {room.photos.map((photo, i) => (
                                         <Card
                                             key={i}
-                                            className={`relative overflow-hidden group`}
+                                            className={`relative overflow-hidden group p-0`}
                                         >
                                             <Image
                                                 src={photo.url}
                                                 alt={`photo-${i}`}
-                                                width={400}
-                                                height={300}
-                                                className="object-cover w-full h-36 aspect-4/3 rounded-lg"
+                                                width={1000}
+                                                height={1000}
+                                                className="object-cover w-full h-full  rounded-lg"
                                             />
 
                                             {photo.uploading && (
