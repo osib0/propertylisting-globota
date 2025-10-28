@@ -2,7 +2,7 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-  export async function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -22,7 +22,7 @@ import { NextResponse } from "next/server";
 
   if (isAuth && publicPaths.includes(pathname)) {
     const url = req.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
