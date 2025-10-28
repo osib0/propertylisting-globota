@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/tabs";
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Images, Trash, ArrowRight } from "lucide-react";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
@@ -207,14 +206,14 @@ const removePhoto = (category: string, idx: number) => {
                       {photosByCategory[cat].map((photo: { url: string | StaticImport; }, idx: number) => (
                         <Card
                           key={idx}
-                          className="relative overflow-hidden group rounded-xl border"
+                          className="relative overflow-hidden group rounded-xl border p-0"
                         >
                           <Image
                             src={photo.url}
                             alt={`photo-${idx}`}
-                            width={300}
-                            height={200}
-                            className="object-cover w-full h-40"
+                            width={2000}
+                            height={2000}
+                            className="object-cover w-full h-full"
                           />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                             <Button
