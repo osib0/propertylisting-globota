@@ -1,6 +1,6 @@
 'use client'
 
-import  { useState } from "react"
+import { useState } from "react"
 import {
     Sidebar,
     SidebarContent,
@@ -99,7 +99,6 @@ export function CustomSidebar() {
                         </SidebarGroup>
                     </div>
 
-                    {/* Logout Section */}
                     <div className="border-t pt-3">
                         <button
                             onClick={() => setOpen(true)}
@@ -112,13 +111,12 @@ export function CustomSidebar() {
                 </SidebarContent>
             </Sidebar>
 
-            {/* Confirm Logout Dialog */}
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirm Logout</DialogTitle>
                         <DialogDescription>
-                          Are you sure you want to logout?
+                            Are you sure you want to logout?
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex justify-end gap-2">
