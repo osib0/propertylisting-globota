@@ -27,6 +27,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Images, Trash, ArrowRight } from "lucide-react";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import { useAppContext } from "@/app/contextapi";
 
 // -------------------------
 // Constants & Schema
@@ -47,7 +48,7 @@ const CATEGORIES = [
 
 const formSchema = z.object({
   property_photos: z.record(
-    z.string(), 
+    z.string(),
     z.array(
       z.object({
         url: z.string().url(),
@@ -77,6 +78,7 @@ export default function PropertyPhotos({
     CATEGORIES[0]
   );
   const [uploading, setUploading] = useState(false);
+  const { setTab } = useAppContext();
 
   const form = useForm<PropertyPhotosSchema>({
     resolver: zodResolver(formSchema),
@@ -91,7 +93,7 @@ export default function PropertyPhotos({
     },
   });
 
-  const photosByCategory:any = form.watch("property_photos");
+  const photosByCategory: any = form.watch("property_photos");
 
   const syncWithParent = useCallback(() => {
     setShareData((prev: any) => ({
@@ -139,10 +141,10 @@ export default function PropertyPhotos({
   // -------------------------
   // Remove Photo
   // -------------------------
-const removePhoto = (category: string, idx: number) => {
-  const updated = photosByCategory[category].filter((category:string, i: number) => i !== idx);
-  form.setValue(`property_photos.${category}`, updated);
-};
+  const removePhoto = (category: string, idx: number) => {
+    const updated = photosByCategory[category].filter((category: string, i: number) => i !== idx);
+    form.setValue(`property_photos.${category}`, updated);
+  };
 
 
   // -------------------------
@@ -171,10 +173,10 @@ const removePhoto = (category: string, idx: number) => {
               Categories
             </h4>
 
-            <Tabs value={activeCategory}  onValueChange={(val) => setActiveCategory(val as (typeof CATEGORIES)[number])}>
+            <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as (typeof CATEGORIES)[number])}>
               <TabsList className="flex flex-wrap gap-2 mb-4 h-full">
                 {CATEGORIES.map((cat) => (
-                  <TabsTrigger  key={cat} value={cat} className="capitalize w-full">
+                  <TabsTrigger key={cat} value={cat} className="capitalize w-full">
                     {cat}
                   </TabsTrigger>
                 ))}
@@ -237,11 +239,17 @@ const removePhoto = (category: string, idx: number) => {
           </div>
 
           {/* Footer */}
-          <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
+          <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => setTab('Property Amenities')} >
+              Back
+            </Button>
+
             <Button
               type="button"
               disabled={uploading}
               className="flex items-center gap-2"
+              onClick={()=>setTab('Room Details')}
             >
               {uploading ? (
                 <>
@@ -282,9 +290,8 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-        isDragActive ? "border-primary bg-primary/5" : "border-muted"
-      }`}
+      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${isDragActive ? "border-primary bg-primary/5" : "border-muted"
+        }`}
     >
       <input {...getInputProps()} />
       <p className="text-sm text-muted-foreground">

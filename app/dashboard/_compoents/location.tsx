@@ -79,7 +79,7 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
         setLoading(true);
         const valid = await form.trigger();
         if (valid) {
-            setTab('location')
+            setTab('Property Amenities')
         }
         setLoading(false);
     };
@@ -98,7 +98,7 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
 
             {/* Form */}
             <div className="flex-1 overflow-y-auto p-6">
-                <Card className="p-6 w-full max-w-5xl mx-auto shadow-sm border">
+                <Card className="p-6 w-full max-w-5xl mx-auto border">
                     <Form {...form}>
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Left Column - Address Fields */}
@@ -240,11 +240,10 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
                     </Form>
                 </Card>
             </div>
-            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
-                {/* <Button variant="outline" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          Save Draft
-        </Button> */}
+            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2" onClick={()=>setTab('Property Details')}>
+                    Back
+                </Button>
                 <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">
                     {loading ? (
                         <>

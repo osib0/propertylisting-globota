@@ -49,17 +49,20 @@ const menuItems = [
     { icon: ImageIcon, label: "Room Photos" },
     { icon: FileText, label: "Documents" },
     { icon: User, label: "Owner Details" },
+    { icon: User, label: "Inventory" },
 ]
 
 export function CustomSidebar() {
-    const { isTab, setTab } = useAppContext();
+    const { isTab, setTab, isAprove } = useAppContext();
     const { data: session } = useSession();
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState<boolean>(false);
 
     if (!session?.user) {
         return null
     }
-
+    if (!isAprove) {
+        return null
+    }
     return (
         <>
             <Sidebar collapsible="offcanvas" className="bg-white">

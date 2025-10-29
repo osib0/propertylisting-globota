@@ -92,7 +92,7 @@ export default function SleepingArrangement({
 
     const handleNext = async () => {
         setLoading(true);
-        setTab('Sleeping Arrangement')
+        setTab('Room Amenities')
         setLoading(false);
     };
 
@@ -109,7 +109,7 @@ export default function SleepingArrangement({
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 space-y-6 p-6 bg-gray-50 max-w-3xl mx-auto">
+            <div className="flex-1 space-y-6 p-6 bg-gray-50 ">
                 <div className="flex justify-end">
                     <Button
                         type="button"
@@ -120,13 +120,14 @@ export default function SleepingArrangement({
                         <Plus className="w-4 h-4 mr-1" /> Add Bed Type
                     </Button>
                 </div>
+                <div className="max-w-3xl mx-auto space-y-4">
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                     <Bed className="w-5 h-5 text-muted-foreground" /> Sleeping Arrangement & Occupancy
                 </h3>
 
                 {bedTypes.map((bed, index) => (
-                    <Card key={index} className="border rounded-xl shadow-sm">
-                        <CardHeader className="flex flex-row justify-between items-center  px-4">
+                    <Card key={index} className="border rounded-xl shadow-none bg-transparent">
+                        <CardHeader className="flex flex-row justify-between items-center">
                             <h3 className="font-semibold">Bed Type {index + 1}</h3>
                             {index > 0 && (
                                 <Button
@@ -267,10 +268,12 @@ export default function SleepingArrangement({
                         </div>
                     ))}
                 </div>
+                </div>
             </div>
 
             {/* Footer */}
-            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
+            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex gap-2 justify-end items-center">
+                <Button variant={'outline'} onClick={()=>setTab('Room Details')}>Back</Button>
                 <Button
                     onClick={handleNext}
                     disabled={loading}

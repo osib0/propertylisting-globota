@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, FileText, UploadCloud, NotebookText, ArrowRight } from "lucide-react";
+import { useAppContext } from "@/app/contextapi";
 
 type UploadedFile = { fileName: string; url: string };
 type DocumentsData = {
@@ -96,11 +97,11 @@ const Dropzone = ({
 const Documents: React.FC<DocumentsProps> = ({
     shareData,
     setShareData,
-    handleNext,
-    loading = false,
 }) => {
     const [docs, setDocs] = useState<DocumentsData>({});
     const [uploading, setUploading] = useState(false);
+    const { setTab } = useAppContext();
+    const [loading,setLoading] = useState<boolean>(false)
 
     // --- Initialize from shareData
     useEffect(() => {
@@ -235,9 +236,16 @@ const Documents: React.FC<DocumentsProps> = ({
 
             </div>
 
-            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
+            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+                 <Button
+                          variant="outline"
+                          className="flex items-center gap-2"
+                          onClick={() => setTab("Documents")}
+                        >
+                          Back
+                        </Button>
                 <Button
-                    onClick={handleNext}
+                    onClick={()=>setTab('Owner Details')}
                     disabled={loading || uploading}
                     className="flex items-center gap-2"
                 >

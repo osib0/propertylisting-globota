@@ -86,7 +86,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
     setLoading(true);
     const valid = await form.trigger();
     if (valid) {   
-      setTab('location')
+      setTab('Location')
     }
     setLoading(false);
   };
@@ -102,7 +102,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
         </p>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        <Card className="p-6 w-full max-w-4xl mx-auto shadow-sm border">
+        <Card className="p-6 w-full max-w-4xl mx-auto shadow-none border">
           <Form {...form}>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Title */}
@@ -209,11 +209,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
           </Form>
         </Card>
       </div>
-      <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
-        {/* <Button variant="outline" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          Save Draft
-        </Button> */}
+      <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
         <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">
           {loading ? (
             <>

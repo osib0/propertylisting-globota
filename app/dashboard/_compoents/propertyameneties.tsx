@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
@@ -104,10 +103,10 @@ export default function PropertyAmenities({
                         <Card
                             key={data._id}
                             className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-200 ${selectedAmenities[data.title] === "yes"
-                                    ? "border-green-500 shadow-md"
-                                    : selectedAmenities[data.title] === "no"
-                                        ? "border-red-400"
-                                        : ""
+                                ? "border-green-500 shadow-md"
+                                : selectedAmenities[data.title] === "no"
+                                    ? "border-red-400"
+                                    : ""
                                 }`}
                         >
                             <div className="flex items-center justify-between mb-3">
@@ -153,11 +152,10 @@ export default function PropertyAmenities({
                     ))}
                 </div>
             </div>
-            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
-                {/* <Button variant="outline" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          Save Draft
-        </Button> */}
+            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2" onClick={() => setTab('Location')} >
+                    Back
+                </Button>
                 <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">
                     {loading ? (
                         <>

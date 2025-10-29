@@ -38,10 +38,12 @@ export const authOptions: NextAuthConfig = {
         // }
 
         if (password) {
-          // Email/password path
           const user = await UserModel.findOne({ email });
 
+
           if (!user || !user.password) return null;
+
+
 
           const isMatch = await bcrypt.compare(password, user.password);
           if (!isMatch) return null;
@@ -52,9 +54,24 @@ export const authOptions: NextAuthConfig = {
             first_name: user.first_name,
             last_name: user.last_name,
             phone: user.phone,
-            profile_image,  // Use signed URL if implemented
+            profile_image,
+          };
+        } else if (phone) {
+          const user = await UserModel.findOne({ phone });
+          if (!user) return null;
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            profile_image
           };
         }
+
+        console.log(id, email, phone);
+
 
         // Phone/OTP path: ADD OTP VALIDATION HERE (e.g., check Redis/session)
         // For now, it returns without validation—fix to prevent bypass

@@ -17,11 +17,11 @@ const RoomSchema = new Schema(
     roomType: { type: String },
     numRooms: { type: Number },
     roomView: { type: String },
-    roomSize: { type: String }, 
+    roomSize: { type: String },
     numBathrooms: { type: Number },
     description: { type: String },
   },
-  { _id: false } 
+  { _id: false }
 );
 
 const RoomPhotoSchema = new Schema({
@@ -106,6 +106,10 @@ const PropertyPhotosSchema = new Schema(
 
 const ListSchema = new Schema(
   {
+    ownerId: {
+      type:String,
+      required:true
+    },
     property_detail: {
       propertyTitle: { type: String, },
       propertyType: { type: String, },
@@ -149,8 +153,8 @@ const ListSchema = new Schema(
         }
       ]
     },
-   
-room_photos: [RoomPhotoSchema],
+
+    room_photos: [RoomPhotoSchema],
     documents: DocumentsSchema,
 
     owner_details: {
@@ -162,6 +166,7 @@ room_photos: [RoomPhotoSchema],
       ownerGstin: String,
       ownerWebsite: String,
     },
+    approved: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

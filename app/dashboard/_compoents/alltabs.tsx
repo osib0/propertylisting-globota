@@ -11,10 +11,13 @@ import RoomAmenities from './roomamenities';
 import RoomPhotos from './roomphoto';
 import Documents from './document';
 import OwnerDetails from './owenerdetail';
+import ManageInventory from './inventory';
+import { useSession } from 'next-auth/react';
 
 const Alltabs = () => {
     const [shareData, setShareData] = useState<any>({});
-    const { isTab } = useAppContext()
+    const { isTab } = useAppContext();
+     const { data: session } = useSession();
 
     return (
         <> 
@@ -28,6 +31,7 @@ const Alltabs = () => {
             {isTab == 'Room Photos' && (<RoomPhotos setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Documents' && (<Documents setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Owner Details' && (<OwnerDetails setShareData={setShareData} shareData={shareData} />)}
+            {isTab == 'Inventory' && (<ManageInventory propertyId={session?.user?.id} />)}
         </>
     )
 }

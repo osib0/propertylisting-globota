@@ -1,19 +1,38 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { useSession } from "next-auth/react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface AppContextType {
   isTab: string;
   setTab: React.Dispatch<React.SetStateAction<any>>;
+  isAprove:boolean
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const { data: session } = useSession();
   const [isTab, setTab] = useState<string>('Property Details');
+  const [isAprove, setAproved] = useState<boolean>(false)
+  
+  
+      useEffect(() => {
+          if (!session?.user?.id) return;
+  
+          (async function () {
+              try {
+                  const response = await fetch(`/api/listproperty/get?ownerId=${session?.user?.id}`);
+                  const result = await response.json();
+                  setAproved(result?.data[0]?.approved || false);
+              } catch (error) {
+                  console.error(error);
+              }
+          })();
+      }, [session?.user?.id]);
 
   return (
-    <AppContext.Provider value={{ isTab, setTab }}>
+    <AppContext.Provider value={{ isTab, setTab,isAprove }}>
       {children}
     </AppContext.Provider>
   );

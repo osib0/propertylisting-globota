@@ -28,7 +28,6 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
   const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext();
 
-  // ✅ Fetch room amenities
   useEffect(() => {
     (async () => {
       const res = await fetch("/api/roomamenities/get");
@@ -50,7 +49,6 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
     })();
   }, []);
 
-  // ✅ Update selected amenities in parent
   useEffect(() => {
     setShareData((prev: any) => ({
       ...prev,
@@ -72,7 +70,7 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
 
   const handleNext = async () => {
     setLoading(true);
-    setTab("Room Photo");
+    setTab("Room Photos");
     setLoading(false);
   };
 
@@ -149,7 +147,10 @@ export default function RoomAmenities({ setShareData, shareData }: RoomAmenities
       </div>
 
       {/* Footer */}
-          <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
+          <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2" onClick={()=>setTab('Sleeping Arrangement')} >
+                                Back
+                            </Button>
             <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">
               {loading ? (
                 <>

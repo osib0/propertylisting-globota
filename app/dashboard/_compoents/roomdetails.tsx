@@ -153,26 +153,26 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
                             </h2>
                         </div>
                     </div>
-                   
+
 
                     {/* Form Fields */}
                     <div className="p-6 space-y-8">
                         <div className="flex justify-end">
-                           <Button type="button" variant="default" size="sm" onClick={() => append({
-                            roomName: "",
-                            roomType: "",
-                            numRooms: 1,
-                            roomView: "",
-                            roomSizeValue: null,
-                            roomSizeUnit: "sqft",
-                            numBathrooms: 1,
-                            description: "",
-                        })}>
-                            <PlusCircle className="w-4 h-4 mr-1" /> Add Room
-                        </Button>
+                            <Button type="button" variant="default" size="sm" onClick={() => append({
+                                roomName: "",
+                                roomType: "",
+                                numRooms: 1,
+                                roomView: "",
+                                roomSizeValue: null,
+                                roomSizeUnit: "sqft",
+                                numBathrooms: 1,
+                                description: "",
+                            })}>
+                                <PlusCircle className="w-4 h-4 mr-1" /> Add Room
+                            </Button>
                         </div>
                         {fields.map((field, index) => (
-                            <Card key={field.id} className="border rounded-xl shadow-sm">
+                            <Card key={field.id} className="border rounded-xl shadow-sm max-w-4xl mx-auto">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <CardTitle className="text-base font-semibold flex items-center gap-2">
                                         Room {index + 1}
@@ -374,15 +374,12 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
                             </Card>
                         ))}
                     </div>
-
-                    {/* Footer */}
                 </form>
             </Form>
-            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center">
-                {/* <Button variant="outline" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          Save Draft
-        </Button> */}
+            <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2" onClick={()=>setTab('Property Photos')} >
+                    Back
+                </Button>
                 <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">
                     {loading ? (
                         <>

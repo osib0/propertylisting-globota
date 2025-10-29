@@ -6,22 +6,43 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe, Landmark, Mail, Phone, ArrowRight } from "lucide-react";
+import { Globe, Landmark, Mail, Phone, ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 
 const ownerSchema = z.object({
-    ownerName: z.string().min(1, "Owner name is required"),
-    ownerPhone: z.string().optional(),
-    ownerAltPhone: z.string().optional(),
-    ownerEmail: z.string().email("Invalid email").optional(),
-    ownerCompany: z.string().optional(),
-    ownerGstin: z.string().optional(),
-    ownerWebsite: z.string().optional()
+  ownerName: z.string().min(1, "Owner name is required"),
+  ownerPhone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[0-9]{10}$/.test(val), {
+      message: "Phone must be 10 digits",
+    }),
+  ownerAltPhone: z.string().optional(),
+  ownerEmail: z
+    .string()
+    .email("Invalid email")
+    .optional()
+    .or(z.literal("")),
+  ownerCompany: z.string().optional(),
+  ownerGstin: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[0-9A-Z]{15}$/.test(val), {
+      message: "Invalid GSTIN format",
+    }),
+  ownerWebsite: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => !val || val.startsWith("https://"), {
+      message: "Website must start with https://",
+    }),
 });
+
 
 type OwnerFormValues = z.infer<typeof ownerSchema>;
 
@@ -36,6 +57,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
     setShareData,
     handleNext,
 }) => {
+    const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<OwnerFormValues>({
@@ -51,7 +73,6 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
         },
     });
 
-    // Load existing owner data if available
     useEffect(() => {
         if (shareData?.owner_details) {
             form.reset(shareData.owner_details);
@@ -60,9 +81,11 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
 
     // Update shared data when form changes
     useEffect(() => {
+        
         const subscription = form.watch((values) => {
             setShareData((prev: any) => ({
                 ...prev,
+                ownerId:session?.user?.id,
                 owner_details: values,
             }));
         });
@@ -119,43 +142,61 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
             </div>
 
             {/* Form */}
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="flex-1 p-6 max-w-5xl mx-auto"
-                >
-                    <Card className="px-4">
-                        <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {fields.map(({ name, label, icon, placeholder }) => (
-                                <FormField
-                                    key={name}
-                                    control={form.control}
-                                    name={name as keyof OwnerFormValues}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="flex items-center gap-1 text-sm font-medium">
-                                                {icon}
-                                                {label}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder={placeholder} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            ))}
-                        </CardContent>
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                        >
-                            {loading ? "Saving..." : <>Submit</>}
-                        </Button>
-                    </Card>
+          <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex-1 px-4 sm:px-6 md:px-10 py-8 max-w-6xl mx-auto w-full"
+        >
+          <Card className="border-gray-200 shadow-sm">
+            <CardContent className="p-8 space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {fields.map(({ name, label, icon, placeholder }) => (
+                  <FormField
+                    key={name}
+                    control={form.control}
+                    name={name as keyof OwnerFormValues}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1 text-sm font-medium text-gray-700">
+                          {icon}
+                          {label}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={placeholder}
+                            className="h-10 focus:ring-2 focus:ring-primary/50"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
 
-                </form>
-            </Form>
+              <div className="flex justify-end pt-6 border-t">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex items-center gap-2 min-w-[140px]"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Continue <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
         </div>
     );
 };
