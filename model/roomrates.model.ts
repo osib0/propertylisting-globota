@@ -1,7 +1,7 @@
-import mongoose, { Schema, Model, Document } from "mongoose";
-import "@/model/property/property.model";
-import "@/model/room/room.model";
-import "@/model/roomrateplan/roomrateplan.model";
+import mongoose, {  Model, Document } from "mongoose";
+import "@/model/property.model";
+import "@/model/rooms.model";
+import "@/model/roomrateplan.model";
 interface IRoomRate extends Document {
   type: string;
   property_id: mongoose.Types.ObjectId;
