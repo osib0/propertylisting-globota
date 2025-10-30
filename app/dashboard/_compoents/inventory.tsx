@@ -133,8 +133,53 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
         setDates(generateDates(startDate));
     }, [startDate, generateDates]);
 
+    // useEffect(() => {
+    //     let abort = new AbortController();
+    //     (async () => {
+    //         if (!propertyId) return;
+
+    //         try {
+    //             setBootLoading(true);
+    //             setError(null);
+
+    //             const r = await fetch(`/api/room/roomlist/${propertyId}`, {
+    //                 signal: abort.signal,
+    //                 cache: "no-store",
+    //             });
+    //             const j = await r.json();
+    //             if (!j?.success) throw new Error(j?.error || "Failed to load rooms");
+
+    //             const rooms: Room[] = (j.data || []).map((x: any) => ({
+    //                 _id: x._id,
+    //                 room_name: x.room_name,
+    //                 ratePlans: x.ratePlans || [],
+    //             }));
+
+
+
+    //             setRoomState(rooms);
+
+    //             const planMap = new Map<string, RatePlan>();
+    //             rooms.forEach((rm) => {
+    //                 (rm.ratePlans || []).forEach((p) => {
+    //                     if (!planMap.has(p._id)) planMap.set(p._id, p);
+    //                 });
+    //             });
+    //             setRatePlan(Array.from(planMap.values()));
+    //         } catch (e: any) {
+    //             if (e?.name !== "AbortError")
+    //                 setError(e?.message || "Failed to load rooms");
+    //         } finally {
+    //             setBootLoading(false);
+    //         }
+    //     })();
+
+    //     return () => abort.abort();
+    // }, [propertyId]);
+
     useEffect(() => {
         let abort = new AbortController();
+
         (async () => {
             if (!propertyId) return;
 
@@ -142,31 +187,45 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
                 setBootLoading(true);
                 setError(null);
 
-                const r = await fetch(`/api/room/roomlist/${propertyId}`, {
+                const r = await fetch(`/api/listproperty/get/?ownerId=${propertyId}`, {
                     signal: abort.signal,
                     cache: "no-store",
                 });
+
                 const j = await r.json();
+                console.log(j, "rooms list data");
+
                 if (!j?.success) throw new Error(j?.error || "Failed to load rooms");
 
-                const rooms: Room[] = (j.data || []).map((x: any) => ({
-                    _id: x._id,
-                    room_name: x.room_name,
-                    ratePlans: x.ratePlans || [],
-                }));
+                const properties = Array.isArray(j.data) ? j.data : [j.data];
 
+                const rooms = properties.flatMap((property: any) =>
+                    (property.room_detail || []).map((room: any) => {
+                        const roomQty = Number(room.numRooms);
+                        return {
+                            _id: property._id,
+                            room_name: room.roomName || "Unnamed Room",
+                            room_type: room.roomType || "",
+                            room_quantity: !isNaN(roomQty) && roomQty > 0 ? roomQty : 1,
+                            room_view: room.roomView || "",
+                            description: room.description || "",
+                            ratePlans: room.ratePlans || [],
+                            propertyId: property.ownerId,
+                        };
+                    })
+                );
+
+                console.log(rooms, "formatted rooms");
                 setRoomState(rooms);
-
                 const planMap = new Map<string, RatePlan>();
-                rooms.forEach((rm) => {
-                    (rm.ratePlans || []).forEach((p) => {
+                rooms.forEach((rm: { ratePlans: any; }) => {
+                    (rm.ratePlans || []).forEach((p: RatePlan) => {
                         if (!planMap.has(p._id)) planMap.set(p._id, p);
                     });
                 });
                 setRatePlan(Array.from(planMap.values()));
             } catch (e: any) {
-                if (e?.name !== "AbortError")
-                    setError(e?.message || "Failed to load rooms");
+                if (e?.name !== "AbortError") setError(e?.message || "Failed to load rooms");
             } finally {
                 setBootLoading(false);
             }
@@ -458,7 +517,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
     })();
 
     return (
-        <div className="p-4 md:p-8 w-full max-w-7xl space-y-6 min-h-screen bg-background">
+        <div className="p-6 md:p-8 w-full max-w-7xl space-y-6 min-h-screen bg-background">
             {!bulkUpdate ? (
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
@@ -779,7 +838,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
             <CalendarViewModal
                 show={showCalendar}
                 onHide={() => setShowCalendar(false)}
-                propertyId={propertyId??''}
+                propertyId={propertyId ?? ''}
                 type={currentType}
             />
             <RateModel showRateModal={showRateModal} setShowRateModal={setShowRateModal} />

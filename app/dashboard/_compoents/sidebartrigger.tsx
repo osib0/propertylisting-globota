@@ -54,7 +54,7 @@ const SidebartriggerCompoent = () => {
 
     return (
         <>
-            <SidebarTrigger className="fixed z-50 right-5 top-5" />
+            <SidebarTrigger className="fixed z-50 right-2 top-2" />
 
         </>
     )
