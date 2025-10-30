@@ -37,6 +37,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 const menuItems = [
     { icon: Home, label: "Property Details" },
@@ -68,7 +69,10 @@ export function CustomSidebar() {
             <Sidebar collapsible="offcanvas" className="bg-white">
                 <SidebarContent className="bg-white px-3 flex flex-col justify-between h-full">
                     <div>
-                        <Image src={logoIcon} alt="icon" width={50} height={50} className="bg-white mb-2" />
+                        <div className="flex justify-between items-center">
+                            <Image src={logoIcon} alt="icon" width={50} height={50} className="bg-white mb-2" />
+                            <Badge className="bg-green-100 text-zinc-500">Aproved</Badge>
+                        </div>
                         <SidebarGroup>
                             <SidebarGroupLabel>Menu</SidebarGroupLabel>
                             <SidebarGroupContent>

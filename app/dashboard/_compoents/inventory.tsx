@@ -622,7 +622,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
                                                     {item.day}
                                                 </span>
                                                 <span className="text-2xl font-normal">{item.date}</span>
-                                                <span className="text-xs text-muted-foreground">{item.month}</span>
+                                                <span className="text-xs font-medium text-zinc-400">{item.month}</span>
                                             </div>
                                         );
                                     })}
@@ -669,7 +669,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
 
                                         {dates.map((item, idx) => (
                                             <div key={idx} className="flex-1 p-2">
-                                                <Card className={cn("border-2 border-dashed", unblocked[roomIndex]?.[idx] && "border-destructive bg-destructive/5")}>
+                                                <Card className={cn("border-2 py-0 border-dashed", unblocked[roomIndex]?.[idx] && "border-destructive bg-destructive/5")}>
                                                     <CardContent className="p-3 text-center">
                                                         {unblocked[roomIndex]?.[idx] ? (
                                                             <>
@@ -689,7 +689,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
                                                         ) : (
                                                             <>
                                                                 <Input
-                                                                    type="number"
+                                                                    // type="number"
                                                                     value={roomInventory[`${roomIndex}-${idx}`] ?? ""}
                                                                     onChange={(e) => handleInventoryChange(roomIndex, idx, e.target.value)}
                                                                     className="text-center mb-2"

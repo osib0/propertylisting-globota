@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Globe, Landmark, Mail, Phone, ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import Header from "./header";
+import { useAppContext } from "@/app/contextapi";
 
 
 const ownerSchema = z.object({
@@ -47,102 +49,101 @@ const ownerSchema = z.object({
 type OwnerFormValues = z.infer<typeof ownerSchema>;
 
 interface OwnerDetailsProps {
-    shareData: any;
-    setShareData: (value: any) => void;
-    handleNext?: () => void;
+  shareData: any;
+  setShareData: (value: any) => void;
+  handleNext?: () => void;
+  defaultData: any
 }
 
 const OwnerDetails: React.FC<OwnerDetailsProps> = ({
-    shareData,
-    setShareData,
-    handleNext,
+  shareData,
+  setShareData,
+  handleNext,
+  defaultData
 }) => {
-    const { data: session } = useSession();
-    const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(false);
+  const { setTab } = useAppContext();
 
-    const form = useForm<OwnerFormValues>({
-        resolver: zodResolver(ownerSchema),
-        defaultValues: {
-            ownerName: "",
-            ownerPhone: "",
-            ownerAltPhone: "",
-            ownerEmail: "",
-            ownerCompany: "",
-            ownerGstin: "",
-            ownerWebsite: "",
-        },
+
+  const form = useForm<OwnerFormValues>({
+    resolver: zodResolver(ownerSchema),
+    defaultValues: {
+      ownerName: "",
+      ownerPhone: "",
+      ownerAltPhone: "",
+      ownerEmail: "",
+      ownerCompany: "",
+      ownerGstin: "",
+      ownerWebsite: "",
+    },
+  });
+
+  useEffect(() => {
+    if (defaultData) {
+      form.reset(defaultData);
+    } else if (shareData?.owner_details) {
+      form.reset(shareData.owner_details);
+    }
+  }, [defaultData]);
+
+
+
+  // Update shared data when form changes
+  useEffect(() => {
+
+    const subscription = form.watch((values) => {
+      setShareData((prev: any) => ({
+        ...prev,
+        ownerId: session?.user?.id,
+        owner_details: values,
+      }));
     });
+    return () => subscription.unsubscribe();
+  }, [form.watch, setShareData]);
 
-    useEffect(() => {
-        if (shareData?.owner_details) {
-            form.reset(shareData.owner_details);
-        }
-    }, [form]);
+  const fields = [
+    { name: "ownerName", label: "Owner Name *", placeholder: "Full legal name" },
+    { name: "ownerPhone", label: "Phone", icon: <Phone className="w-4 h-4 text-primary" />, placeholder: "+91 98xxxxxx" },
+    { name: "ownerAltPhone", label: "Alt. Phone", placeholder: "+91 9xxxxxxx" },
+    { name: "ownerEmail", label: "Email", icon: <Mail className="w-4 h-4 text-primary" />, placeholder: "owner@email.com" },
+    { name: "ownerCompany", label: "Company (optional)", icon: <Landmark className="w-4 h-4 text-primary" />, placeholder: "Legal entity / trade name" },
+    { name: "ownerGstin", label: "GSTIN (optional)", placeholder: "15-digit GSTIN" },
+    { name: "ownerWebsite", label: "Website (optional)", icon: <Globe className="w-4 h-4 text-primary" />, placeholder: "https://" },
+  ];
 
-    // Update shared data when form changes
-    useEffect(() => {
-        
-        const subscription = form.watch((values) => {
-            setShareData((prev: any) => ({
-                ...prev,
-                ownerId:session?.user?.id,
-                owner_details: values,
-            }));
-        });
-        return () => subscription.unsubscribe();
-    }, [form.watch, setShareData]);
+  const onSubmit = async (values: OwnerFormValues) => {
+    try {
+      setLoading(true);
 
-    const fields = [
-        { name: "ownerName", label: "Owner Name *", placeholder: "Full legal name" },
-        { name: "ownerPhone", label: "Phone", icon: <Phone className="w-4 h-4 text-primary" />, placeholder: "+91 98xxxxxx" },
-        { name: "ownerAltPhone", label: "Alt. Phone", placeholder: "+91 9xxxxxxx" },
-        { name: "ownerEmail", label: "Email", icon: <Mail className="w-4 h-4 text-primary" />, placeholder: "owner@email.com" },
-        { name: "ownerCompany", label: "Company (optional)", icon: <Landmark className="w-4 h-4 text-primary" />, placeholder: "Legal entity / trade name" },
-        { name: "ownerGstin", label: "GSTIN (optional)", placeholder: "15-digit GSTIN" },
-        { name: "ownerWebsite", label: "Website (optional)", icon: <Globe className="w-4 h-4 text-primary" />, placeholder: "https://" },
-    ];
+      // merge with parent shared data
+      const payload = { ...shareData, owner_details: values };
 
-    const onSubmit = async (values: OwnerFormValues) => {
-        try {
-            setLoading(true);
+      const res = await fetch(`/api/listproperty/add?ownerId=${session?.user?.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-            // merge with parent shared data
-            const payload = { ...shareData, owner_details: values };
+      if (!res.ok) throw new Error("Failed to save data");
+      const result = await res.json();
+      if (result.success) {
+        toast.success("details saved successfully");
+      }
+      handleNext?.();
+    } catch (err: any) {
+      console.error("Error:", err);
+      toast.error("Failed to save details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const res = await fetch("/api/listproperty/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) throw new Error("Failed to save data");
-            const result = await res.json();
-            if (result.success) {
-                toast.success("details saved successfully");
-            }
-            handleNext?.();
-        } catch (err: any) {
-            console.error("Error:", err);
-            toast.error("Failed to save details");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="flex flex-col min-h-screen w-full">
-            {/* Header */}
-            <div className="border-b bg-white py-4 px-6 sticky top-0 z-20">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold">Owner / Host Details</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                    Provide owner’s verified contact details for communication and KYC.
-                </p>
-            </div>
-
-            {/* Form */}
-          <Form {...form}>
+  return (
+    <div className="flex flex-col min-h-screen w-full">
+      <Header title="Owner / Host Details" description="Provide owner’s verified contact details for communication and KYC." />
+      {/* Form */}
+      <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-1 px-4 sm:px-6 md:px-10 py-8 max-w-6xl mx-auto w-full"
@@ -175,7 +176,14 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
                 ))}
               </div>
 
-              <div className="flex justify-end pt-6 border-t">
+              <div className="flex justify-end pt-6 border-t gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  onClick={() => setTab("Documents")}
+                >
+                  Back
+                </Button>
                 <Button
                   type="submit"
                   disabled={loading}
@@ -197,8 +205,8 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
           </Card>
         </form>
       </Form>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default OwnerDetails;

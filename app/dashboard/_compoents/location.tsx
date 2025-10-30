@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/card";
 import { useAppContext } from "../../contextapi";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
+import Header from "./header";
 
 const MapPicker = dynamic(
     () => import("./map"),
@@ -40,9 +41,10 @@ type LocationFormData = z.infer<typeof locationSchema>;
 interface LocationProps {
     shareData?: any;
     setShareData: (data: any) => void;
+    defaultData: any
 }
 
-export default function Location({ shareData = {}, setShareData }: LocationProps) {
+export default function Location({ shareData = {}, setShareData, defaultData }: LocationProps) {
     const { setTab } = useAppContext();
     const [loading, setLoading] = useState(false);
 
@@ -50,13 +52,13 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
     const form = useForm<LocationFormData>({
         resolver: zodResolver(locationSchema),
         defaultValues: {
-            addressLine1: shareData?.location?.addressLine1 || "",
-            addressLine2: shareData?.location?.addressLine2 || "",
-            landmark: shareData?.location?.landmark || "",
-            city: shareData?.location?.city || "",
-            stateName: shareData?.location?.stateName || "",
-            country: shareData?.location?.country || "India",
-            pincode: shareData?.location?.pincode || "",
+            addressLine1: defaultData?.addressLine1 || "",
+            addressLine2: defaultData?.addressLine2 || "",
+            landmark: defaultData?.landmark || "",
+            city: defaultData?.city || "",
+            stateName: defaultData?.stateName || "",
+            country: defaultData?.country || "India",
+            pincode: defaultData?.pincode || "",
         },
     });
 
@@ -75,6 +77,8 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
     }, [form, setShareData]);
 
 
+
+
     const handleNext = async () => {
         setLoading(true);
         const valid = await form.trigger();
@@ -86,22 +90,11 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
 
     return (
         <div className="flex flex-col w-full">
-            {/* Header */}
-            <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold">Location</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                    Provide your property address and pin it on the map.
-                </p>
-            </div>
-
-            {/* Form */}
+            <Header title="Location" description="Provide your property address and pin it on the map." />
             <div className="flex-1 overflow-y-auto p-6">
                 <Card className="p-6 w-full max-w-5xl mx-auto border">
                     <Form {...form}>
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Left Column - Address Fields */}
                             <div className="flex flex-col gap-4">
                                 <FormField
                                     control={form.control}
@@ -241,7 +234,7 @@ export default function Location({ shareData = {}, setShareData }: LocationProps
                 </Card>
             </div>
             <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
-                <Button variant="outline" className="flex items-center gap-2" onClick={()=>setTab('Property Details')}>
+                <Button variant="outline" className="flex items-center gap-2" onClick={() => setTab('Property Details')}>
                     Back
                 </Button>
                 <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">

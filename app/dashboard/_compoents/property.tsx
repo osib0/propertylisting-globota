@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Save } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
+import Header from "./header";
 
 const formSchema = z.object({
   propertyTitle: z.string().min(1, "Property name is required"),
@@ -36,7 +37,7 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
 });
 
-export default function PropertyDetails({ setShareData, shareData }: any) {
+export default function PropertyDetails({ setShareData, shareData,defaultData }: any) {
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext()
@@ -44,7 +45,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      propertyTitle: "",
+      propertyTitle:"",
       propertyType: "",
       email: "",
       propertyBuildYear: "",
@@ -66,6 +67,19 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
       form.reset(shareData.property_detail);
     }
   }, []);
+
+ useEffect(() => {
+    if (defaultData) {
+      form.reset({
+        propertyTitle: defaultData.propertyTitle || "",
+        propertyType: defaultData.propertyType || "",
+        email: defaultData.email || "",
+        propertyBuildYear: defaultData.propertyBuildYear || "",
+        bookingSinceYear: defaultData.bookingSinceYear || "",
+        description: defaultData.description || "",
+      });
+    }
+  }, [defaultData, form]);
 
   useEffect(() => {
     const subscription = form.watch((values) => {
@@ -93,14 +107,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Property Details</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Tell us more about your property before we move to the next step.
-        </p>
-      </div>
+     <Header title="Property Details" description="Tell us more about your property before we move to the next step." />
       <div className="flex-1 overflow-y-auto p-6">
         <Card className="p-6 w-full max-w-4xl mx-auto shadow-none border">
           <Form {...form}>
@@ -129,7 +136,7 @@ export default function PropertyDetails({ setShareData, shareData }: any) {
                     <FormLabel>
                       Property Type <span className="text-red-500">*</span>
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange}  value={field.value}>
                       <FormControl className="w-full">
                         <SelectTrigger>
                           <SelectValue placeholder="Select property type..." />

@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Images, Trash, ArrowRight } from "lucide-react";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { useAppContext } from "@/app/contextapi";
+import Header from "./header";
 
 // -------------------------
 // Constants & Schema
@@ -65,6 +66,7 @@ type PropertyPhotosSchema = z.infer<typeof formSchema>;
 interface PropertyPhotosProps {
   setShareData: React.Dispatch<React.SetStateAction<any>>;
   shareData: any;
+  defaultData:any
 }
 
 // -------------------------
@@ -73,6 +75,7 @@ interface PropertyPhotosProps {
 export default function PropertyPhotos({
   setShareData,
   shareData,
+  defaultData
 }: PropertyPhotosProps) {
   const [activeCategory, setActiveCategory] = useState<(typeof CATEGORIES)[number]>(
     CATEGORIES[0]
@@ -92,6 +95,21 @@ export default function PropertyPhotos({
       ),
     },
   });
+  
+  useEffect(() => {
+  if (defaultData) {
+    form.reset({
+      property_photos: CATEGORIES.reduce(
+        (acc, cat) => ({
+          ...acc,
+          [cat]: defaultData[cat] || [],
+        }),
+        {} as Record<string, { url: string }[]>
+      ),
+    });
+  }
+}, [defaultData, form]);
+
 
   const photosByCategory: any = form.watch("property_photos");
 
@@ -154,19 +172,7 @@ export default function PropertyPhotos({
     <div className="flex flex-col min-h-screen w-full">
       <Form {...form}>
         <form className="flex flex-col flex-1">
-          {/* Header */}
-          <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold flex items-center gap-2">
-                <Images className="w-5 h-5 text-muted-foreground" />
-                Property Photos
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Upload cover and gallery photos for each category.
-            </p>
-          </div>
-
+            <Header title="Property Photos" description="Upload cover and gallery photos for each category." />
           {/* Category Tabs */}
           <div className="p-6 flex-1 overflow-y-auto">
             <h4 className="text-sm font-medium mb-2 text-muted-foreground">

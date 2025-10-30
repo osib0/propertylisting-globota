@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Images, ArrowRight, Loader2, Trash2, Star } from "lucide-react";
+import { Images, Loader2, Trash2, Star, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { useAppContext } from "@/app/contextapi";
+import Header from "./header";
 
 type RoomPhoto = {
   category: string;
@@ -25,7 +26,7 @@ function Dropzone({
   note?: string;
 }) {
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop: (acc: File[]) => onFiles(acc),
+    onDrop: (accepted: File[]) => onFiles(accepted),
     accept: { "image/*": [".jpg", ".jpeg", ".png", ".webp"] },
     multiple,
     noClick: true,
@@ -34,17 +35,16 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`relative flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 p-10 cursor-pointer transition-all duration-200
-      ${isDragActive ? "border-primary/60 bg-primary/5 scale-[1.01]" : "hover:border-primary/40 hover:bg-muted/30"}
-      `}
+      className={`border border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer transition-all
+      ${isDragActive ? "border-primary bg-primary/5" : "hover:border-primary/40 hover:bg-muted/30"}`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center text-center space-y-3">
+      <div className="flex flex-col items-center gap-3">
         <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10">
           <Images className="w-6 h-6 text-primary" />
         </div>
         <p className="text-sm text-muted-foreground">
-          <strong className="text-foreground">Drag & drop</strong> your images here or{" "}
+          <strong>Drag & drop</strong> images here or{" "}
           <button
             type="button"
             onClick={open}
@@ -62,34 +62,42 @@ function Dropzone({
 interface RoomPhotosProps {
   setShareData: (value: any) => void;
   shareData: any;
+  defaultData?: any;
 }
 
 const RoomPhotos: React.FC<RoomPhotosProps> = ({
   setShareData,
   shareData,
+  defaultData,
 }) => {
   const [roomPhotos, setRoomPhotos] = useState<RoomPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext();
 
-
   useEffect(() => {
-    if (shareData?.room_detail) {
+    if (shareData?.room_detail?.length) {
       const initialPhotos = shareData.room_detail.map((room: any) => {
-        const existing = shareData.room_photos?.find(
-          (r: any) => r.category === room.roomName
-        );
+        const existing =
+          shareData.room_photos?.find((r: any) => r.category === room.roomName) ||
+          defaultData?.find((r: any) => r.category === room.roomName);
+
         return (
-          existing || { category: room.roomName, photos: [], coverPhotoIndex: 0 }
+          existing || {
+            category: room.roomName,
+            photos: [],
+            coverPhotoIndex: 0,
+          }
         );
       });
       setRoomPhotos(initialPhotos);
     }
-  }, []);
+  }, [shareData, defaultData]);
 
   useEffect(() => {
-    if (JSON.stringify(shareData?.room_photos) !== JSON.stringify(roomPhotos)) {
+    if (
+      JSON.stringify(shareData?.room_photos) !== JSON.stringify(roomPhotos)
+    ) {
       setShareData((prev: any) => ({
         ...prev,
         room_photos: roomPhotos,
@@ -98,12 +106,13 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
   }, [roomPhotos]);
 
   const handlePhotoUpload = async (category: string, files: File[]) => {
-    if (files.length === 0) return;
+    if (!files.length) return;
     setUploading(true);
 
     for (const file of files) {
       const tempUrl = URL.createObjectURL(file);
 
+      // temporary preview
       setRoomPhotos((prev) =>
         prev.map((room) =>
           room.category === category
@@ -127,11 +136,9 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
           method: "POST",
           body: formData,
         });
-
         const data = await res.json();
-        const signedUrl = data.url || data.signedUrl;
 
-        if (signedUrl) {
+        if (data.url) {
           setRoomPhotos((prev) =>
             prev.map((room) =>
               room.category === category
@@ -139,7 +146,7 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
                     ...room,
                     photos: room.photos.map((p) =>
                       p.fileName === file.name
-                        ? { ...p, url: signedUrl, uploading: false }
+                        ? { ...p, url: data.url, uploading: false }
                         : p
                     ),
                   }
@@ -147,69 +154,66 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
             )
           );
         }
-      } catch (err) {
-        console.error("Upload failed", err);
+      } catch (error) {
+        console.error("Upload failed", error);
       }
     }
 
-    setTimeout(() => setUploading(false), 500);
+    setUploading(false);
   };
 
-  const removePhoto = (category: string, idx: number) => {
+  const removePhoto = (category: string, index: number) => {
     setRoomPhotos((prev) =>
       prev.map((room) =>
         room.category === category
-          ? { ...room, photos: room.photos.filter((_, i) => i !== idx) }
+          ? {
+              ...room,
+              photos: room.photos.filter((_, i) => i !== index),
+            }
           : room
       )
     );
   };
 
-  const setCoverPhoto = (category: string, idx: number) => {
+  const setCoverPhoto = (category: string, index: number) => {
     setRoomPhotos((prev) =>
       prev.map((room) =>
-        room.category === category ? { ...room, coverPhotoIndex: idx } : room
+        room.category === category
+          ? { ...room, coverPhotoIndex: index }
+          : room
       )
     );
   };
 
-  function handleNext(){
-    setTab('Documents')
-  }
+  const handleNext = () => setTab("Documents");
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-gray-50 w-full">
+    <div className="flex flex-col min-h-screen bg-gray-50 w-full">
       {/* Header */}
-      <div className="border-b bg-white py-5 px-6 sticky top-0 z-20 flex flex-col gap-1">
-        <h2 className="text-xl font-semibold tracking-tight">Room Photos</h2>
-        <p className="text-sm text-muted-foreground">
-          Upload and manage images for each room category.
-        </p>
-      </div>
-
+      <Header title="Room Photos" description="Upload and manage photos for each room category." />
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        {roomPhotos.map((room, idx) => (
-          <Card
-            key={idx}
-            className="shadow-none transition-all duration-200"
-          >
+        {roomPhotos.map((room) => (
+          <Card key={room.category} className="shadow-none border-gray-200">
             <CardContent className="p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Images className="w-5 h-5 text-primary" />
-                  <h3 className="font-medium text-lg">{room.category}</h3>
+                  <h3 className="font-medium text-lg capitalize">
+                    {room.category}
+                  </h3>
                 </div>
-                <Badge variant="outline">Cover + Gallery</Badge>
+                <Badge variant="outline">
+                  {room.photos.length} Photo
+                  {room.photos.length !== 1 && "s"}
+                </Badge>
               </div>
 
-              {/* Dropzone */}
               <Dropzone
                 onFiles={(files) => handlePhotoUpload(room.category, files)}
-                note="Upload high-quality JPG, PNG, or WebP images."
+                note="Upload JPG, PNG, or WebP up to 5MB."
               />
 
-              {/* Photo Grid */}
               {room.photos.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {room.photos.map((photo, i) => (
@@ -219,18 +223,16 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
                     >
                       <Image
                         src={photo.url}
-                        alt={`photo-${i}`}
-                        width={1000}
-                        height={1000}
-                        className="object-cover w-full h-40 sm:h-48 md:h-56 transition-transform duration-300 group-hover:scale-105"
+                        alt={photo.fileName}
+                        width={500}
+                        height={300}
+                        className="object-cover w-full h-40 transition-transform duration-300 group-hover:scale-105"
                       />
-
                       {photo.uploading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="w-6 h-6 animate-spin text-white" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <Loader2 className="animate-spin text-white w-6 h-6" />
                         </div>
                       )}
-
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 p-3">
                         <Button
                           size="sm"
@@ -267,31 +269,18 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-3">
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={() => setTab("Room Amenities")}
-        >
+      <div className="border-t bg-white p-4 sticky bottom-0 flex justify-end gap-3">
+        <Button variant="outline" onClick={() => setTab("Room Amenities")}>
           Back
         </Button>
-
-        <Button
-          onClick={handleNext}
-          disabled={loading || uploading}
-          className="flex items-center gap-2"
-        >
+        <Button onClick={handleNext} disabled={uploading || loading}>
           {uploading ? (
             <>
-              <Loader2 className="animate-spin w-4 h-4" /> Uploading...
-            </>
-          ) : loading ? (
-            <>
-              <Loader2 className="animate-spin w-4 h-4" /> Processing...
+              <Loader2 className="animate-spin w-4 h-4 mr-2" /> Uploading...
             </>
           ) : (
             <>
-              Next Step <ArrowRight className="w-4 h-4" />
+              Next Step <ArrowRight className="w-4 h-4 ml-1" />
             </>
           )}
         </Button>

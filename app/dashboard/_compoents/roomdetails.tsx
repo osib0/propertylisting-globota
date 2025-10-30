@@ -30,6 +30,7 @@ import {
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAppContext } from "../../contextapi";
+import Header from "./header";
 
 // --------------------------
 // Validation Schema
@@ -54,12 +55,13 @@ type FormSchema = z.infer<typeof formSchema>;
 interface RoomDetailsProps {
     setShareData: React.Dispatch<React.SetStateAction<any>>;
     shareData: any;
+    defaultData: any
 }
 
 // --------------------------
 // Component
 // --------------------------
-export default function RoomDetails({ setShareData, shareData }: RoomDetailsProps) {
+export default function RoomDetails({ setShareData, shareData, defaultData }: RoomDetailsProps) {
     const [roomTypes, setRoomTypes] = useState<{ label: string; value: string }[]>([]);
     const [roomViews, setRoomViews] = useState<{ label: string; value: string }[]>([]);
     const [loading, setLoading] = useState(false);
@@ -90,6 +92,23 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
         control: form.control,
         name: "room_detail",
     });
+
+    useEffect(() => {
+        if (defaultData) {
+            form.reset({
+                room_detail: defaultData.map((room: any) => ({
+                    roomName: room.roomName || "",
+                    roomType: room.roomType || "",
+                    numRooms: room.numRooms || 1,
+                    roomView: room.roomView || "",
+                    roomSizeValue: room.roomSizeValue || null,
+                    roomSizeUnit: room.roomSizeUnit || "sqft",
+                    numBathrooms: room.numBathrooms || 1,
+                    description: room.description || "",
+                })),
+            });
+        }
+    }, [defaultData, form]);
 
     const rooms = form.watch("room_detail");
 
@@ -144,16 +163,7 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
         <div className="flex flex-col w-full min-h-screen">
             <Form {...form}>
                 <form className="flex flex-col flex-1">
-                    {/* Header */}
-                    <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-2xl font-semibold flex items-center gap-2">
-                                <Info className="w-5 h-5 text-muted-foreground" />
-                                Room Details
-                            </h2>
-                        </div>
-                    </div>
-
+                    <Header title="Room Details" description="Provide rooms details" />
 
                     {/* Form Fields */}
                     <div className="p-6 space-y-8">
@@ -377,7 +387,7 @@ export default function RoomDetails({ setShareData, shareData }: RoomDetailsProp
                 </form>
             </Form>
             <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
-                <Button variant="outline" className="flex items-center gap-2" onClick={()=>setTab('Property Photos')} >
+                <Button variant="outline" className="flex items-center gap-2" onClick={() => setTab('Property Photos')} >
                     Back
                 </Button>
                 <Button onClick={handleNext} disabled={loading} className="flex items-center gap-2">

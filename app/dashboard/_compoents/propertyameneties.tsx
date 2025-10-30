@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useAppContext } from "../../contextapi";
+import Header from "./header";
 
 interface AmenityType {
     _id: string;
@@ -18,11 +19,13 @@ interface AmenityType {
 interface PropertyAmenitiesProps {
     setShareData: (data: any) => void;
     shareData: any;
+    defaultData: any
 }
 
 export default function PropertyAmenities({
     setShareData,
     shareData,
+    defaultData
 }: PropertyAmenitiesProps) {
     const [dbAmenities, setDbAmenities] = useState<AmenityType[]>([]);
     const [selectedAmenities, setSelectedAmenities] = useState<
@@ -34,26 +37,36 @@ export default function PropertyAmenities({
 
 
     // Fetch amenities from API
-    useEffect(() => {
-        (async () => {
-            const res = await fetch("/api/propertyamenities/get");
-            const data = await res.json();
-            const amenities = data?.data || [];
-            setDbAmenities(amenities);
+     useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/propertyamenities/get");
+      const data = await res.json();
+      const amenities = data?.data || [];
+      setDbAmenities(amenities);
 
-            // Initialize selection state
-            if (Object.keys(selectedAmenities).length === 0) {
-                const initial: Record<string, "yes" | "no" | null> = {};
-                amenities.forEach((d: any) => {
-                    const existing = shareData?.property_amenities?.amenities?.find(
-                        (a: any) => a.title === d.title
-                    )?.value;
-                    initial[d.title] = existing ?? null;
-                });
-                setSelectedAmenities(initial);
-            }
-        })();
-    }, []);
+      const initial: Record<string, "yes" | "no" | null> = {};
+      amenities.forEach((d: any) => {
+        const existingValue =
+          defaultData?.amenities?.find(
+            (a: any) => a.title === d.title
+          )?.value ??
+          shareData?.property_amenities?.amenities?.find(
+            (a: any) => a.title === d.title
+          )?.value ??
+          null;
+
+        initial[d.title] =
+          existingValue === "yes" ? "yes" : existingValue === "no" ? "no" : null;
+      });
+
+      setSelectedAmenities(initial);
+    })();
+  }, [defaultData]);
+
+
+
+
+
 
     // Update selected amenities in parent
     useEffect(() => {
@@ -86,15 +99,8 @@ export default function PropertyAmenities({
 
     return (
         <div className="flex flex-col w-full">
-            {/* Header */}
-            <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold">Property Amenities</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                    Select which amenities are available in your property.
-                </p>
-            </div>
+          
+            <Header title="Property Amenities" description="Select which amenities are available in your property." />
 
             {/* Amenity Grid */}
             <div className="flex-1 overflow-y-auto p-6">

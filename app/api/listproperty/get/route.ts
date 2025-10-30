@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     let query: any = {};
     if (ownerId) query.ownerId = ownerId;
 
-    const listProperty = await listpropertyModel.find(query);
+    const listProperty = await listpropertyModel.findOne(query);
 
     return NextResponse.json({ success: true, data: listProperty }, { status: 200 });
   } catch (error: any) {

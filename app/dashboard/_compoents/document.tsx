@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, FileText, UploadCloud, NotebookText, ArrowRight } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
+import Header from "./header";
 
 type UploadedFile = { fileName: string; url: string };
 type DocumentsData = {
@@ -26,6 +27,7 @@ interface DocumentsProps {
     setShareData: (value: any) => void;
     handleNext?: () => void;
     loading?: boolean;
+    defaultData: any
 }
 
 // --- Upload to S3 API ---
@@ -97,16 +99,22 @@ const Dropzone = ({
 const Documents: React.FC<DocumentsProps> = ({
     shareData,
     setShareData,
+    defaultData
 }) => {
     const [docs, setDocs] = useState<DocumentsData>({});
     const [uploading, setUploading] = useState(false);
     const { setTab } = useAppContext();
-    const [loading,setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false)
 
-    // --- Initialize from shareData
     useEffect(() => {
-        if (shareData?.documents) setDocs(shareData.documents);
-    }, [shareData]);
+        if (shareData?.documents) {
+            setDocs(shareData.documents);
+        }
+        else if (defaultData) {
+            setDocs(defaultData);
+        }
+    }, [shareData, defaultData]);
+
 
     // --- Handle file upload
     const handleFiles = async (files: File[], key: keyof DocumentsData) => {
@@ -147,16 +155,8 @@ const Documents: React.FC<DocumentsProps> = ({
 
     return (
         <div className="flex flex-col min-h-screen w-full">
-            <div className="border-b bg-white py-4 px-6 sticky top-0 z-20 flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" /> Documents
-                    </h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                    Upload necessary verification documents (PDF or Images)
-                </p>
-            </div>
+            <Header title="Documents" description="Upload necessary verification documents (PDF or Images)" />
+
             <div className="flex-1 overflow-y-auto p-6 space-y-6 mx-auto">
                 <Card>
                     <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -237,15 +237,15 @@ const Documents: React.FC<DocumentsProps> = ({
             </div>
 
             <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
-                 <Button
-                          variant="outline"
-                          className="flex items-center gap-2"
-                          onClick={() => setTab("Documents")}
-                        >
-                          Back
-                        </Button>
                 <Button
-                    onClick={()=>setTab('Owner Details')}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => setTab("Room Photos")}
+                >
+                    Back
+                </Button>
+                <Button
+                    onClick={() => setTab('Owner Details')}
                     disabled={loading || uploading}
                     className="flex items-center gap-2"
                 >
