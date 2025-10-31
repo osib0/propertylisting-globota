@@ -2,6 +2,27 @@ import dbConnect from "@/lib/db";
 import listpropertyModel from "@/model/listproperty.model";
 import { NextResponse } from "next/server";
 
+// ✅ Transform room_amenities before saving
+const formatRoomAmenities = (data: any) => {
+  if (!data || typeof data !== "object") return [];
+
+  const formatted = [];
+
+  for (const [category, amenities] of Object.entries(data)) {
+    const formattedAmenities = Object.entries(amenities).map(([title, value]) => ({
+      title,
+      value,
+    }));
+
+    formatted.push({
+      category,
+      amenities: formattedAmenities,
+    });
+  }
+
+  return formatted;
+};
+
 export async function POST(req: Request) {
   try {
     await dbConnect();
@@ -9,11 +30,15 @@ export async function POST(req: Request) {
     const ownerId = searchParams.get("ownerId");
     const body = await req.json();
 
+    if (body.room_amenities) {
+      body.room_amenities = formatRoomAmenities(body.room_amenities);
+    }
+
     if (ownerId) {
       const updated = await listpropertyModel.findOneAndUpdate(
         { ownerId },
         { $set: body },
-        { new: true } 
+        { new: true }
       );
 
       if (!updated) {
@@ -35,7 +60,11 @@ export async function POST(req: Request) {
 
     const listProperty = await listpropertyModel.create(body);
     return NextResponse.json(
-      { success: true, message: "Property created successfully", data: listProperty },
+      {
+        success: true,
+        message: "Property created successfully",
+        data: listProperty,
+      },
       { status: 201 }
     );
   } catch (error: any) {
@@ -46,4 +75,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

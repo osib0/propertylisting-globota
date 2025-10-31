@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Info, Loader2 } from "lucide-react";
 import { useAppContext } from "../../contextapi";
 import Header from "./header";
 
@@ -33,7 +33,7 @@ export default function PropertyAmenities({
     >({});
     const [loading, setLoading] = useState(false);
     const { setTab } = useAppContext();
-    
+
 
 
 
@@ -85,6 +85,15 @@ export default function PropertyAmenities({
         }));
     };
 
+    const summary = useMemo(() => {
+        const totalAmenities = dbAmenities.length;
+        const selectedCount = Object.values(selectedAmenities).filter(
+            (val) => val === "yes"
+        ).length;
+        return { totalAmenities, selectedCount };
+    }, [selectedAmenities, dbAmenities]);
+
+
 
     const handleNext = async () => {
         setTab('Property Photos')
@@ -95,9 +104,19 @@ export default function PropertyAmenities({
             <Header title="Property Amenities" description="Select which amenities are available in your property." />
 
             {/* Amenity Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto">
+                {/* Summary Bar */}
+                <div className="px-6 py-3 mt-3 mb-4 flex flex-wrap justify-between items-center max-w-6xl mx-auto w-full text-sm text-gray-700 rounded-xl bg-white">
+                    <div className="flex items-center gap-2">
+                        <Info className="w-4 h-4 text-primary" />
+                        <span className="font-medium">
+                            Total Amenities: {summary.totalAmenities}
+                        </span>
+                    </div>
+                    <span>Selected: {summary.selectedCount}</span>
+                </div>
 
-                <div className="w-full max-w-7xl mx-auto grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="w-full max-w-4xl mx-auto grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {dbAmenities.map((data) => (
                         <Card
                             key={data._id}

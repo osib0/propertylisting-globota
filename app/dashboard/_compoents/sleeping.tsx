@@ -105,26 +105,42 @@ export default function SleepingArrangement({
     
     const { setTab } = useAppContext();
 
-    // Build initial/default values from shareData (or defaultData)
-    const initial = useMemo(() => {
-        const rooms = shareData?.room_detail || [];
-        const prevSleep = shareData?.sleepingArrangement || [];
+    /// Build initial/default values from shareData (or defaultData)
+const initial = useMemo(() => {
+  const rooms = shareData?.room_detail?.length
+    ? shareData.room_detail
+    : defaultData || [];
 
-        return {
-            sleepingArrangement: rooms.map((room: any, idx: number) => {
-                const existing = prevSleep[idx];
-                return (
-                    existing || {
-                        roomName: room.roomName || `Room ${idx + 1}`,
-                        bedTypes: [{ type: "", count: 1 }],
-                        extraBed: "no",
-                        alternateBed: "no",
-                        occupancy: { baseAdults: 2, maxAdults: 3, maxChildren: 3, maxOccupancy: 4 },
-                    }
-                );
-            }),
-        } as SleepingArrangementForm;
-    }, [shareData?.room_detail, shareData?.sleepingArrangement, defaultData]);
+  const prevSleep = Array.isArray(shareData?.sleepingArrangement)
+    ? shareData.sleepingArrangement
+    : Array.isArray(defaultData)
+    ? defaultData
+    : [];
+
+  return {
+    sleepingArrangement: rooms.map((room: any, idx: number) => {
+      const existing = prevSleep.find(
+        (r: any) => r.roomName?.toLowerCase() === room.roomName?.toLowerCase()
+      );
+      return (
+        existing || {
+          roomName: room.roomName || `Room ${idx + 1}`,
+          bedTypes: [{ type: "", count: 1 }],
+          extraBed: "no",
+          alternateBed: "no",
+          occupancy: {
+            baseAdults: 2,
+            maxAdults: 3,
+            maxChildren: 3,
+            maxOccupancy: 4,
+          },
+        }
+      );
+    }),
+  } as SleepingArrangementForm;
+}, [shareData?.room_detail, shareData, defaultData]);
+
+
 
     const form = useForm<SleepingArrangementForm>({
         resolver: zodResolver(SleepingArrangementSchema),
@@ -134,10 +150,12 @@ export default function SleepingArrangement({
 
     const { control, handleSubmit, reset, setValue, watch } = form;
 
-    // If shareData.room_detail changes later, reset the form to new default
-    useEffect(() => {
-        reset(initial);
-    }, [initial, reset]);
+useEffect(() => {
+  if (shareData?.room_detail?.length) {
+    reset(initial);
+  }
+}, [initial, reset, shareData?.room_detail]);
+
 
     // field array for rooms
     const roomsFieldArray = useFieldArray({

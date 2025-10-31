@@ -1,5 +1,3 @@
-
-
 import { CustomSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import SidebartriggerCompoent from "./_compoents/sidebartrigger";

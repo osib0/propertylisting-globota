@@ -131,10 +131,19 @@ const ListSchema = new Schema(
 
 
     room_detail: [RoomSchema],
-    sleepingArrangement: SleepingArrangementSchema,
+    sleepingArrangement: [new Schema(
+      {
+        roomName: { type: String },
+        bedTypes: [BedTypeSchema],
+        extraBed: { type: String, enum: ["yes", "no"], default: "no" },
+        alternateBed: { type: String, enum: ["yes", "no"], default: "no" },
+        occupancy: OccupancySchema,
+      },
+      { _id: false }
+    )],
     room_amenities: [
       {
-        category: { type: String, required: true },
+        category: { type: String },
         amenities: [
           {
             title: String,

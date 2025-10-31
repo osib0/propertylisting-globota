@@ -46,43 +46,64 @@ export default function RoomAmenities({
     })();
   }, []);
 
-useEffect(() => {
-  if (!shareData?.room_detail?.length || !dbAmenities.length) return;
+  useEffect(() => {
+    if (!shareData?.room_detail?.length || !dbAmenities.length) return;
 
-  // agar selectedAmenities already filled hain, dobara reset mat karo
-  if (Object.keys(selectedAmenities).length > 0) return;
+    const initial: Record<string, Record<string, "yes" | "no" | null>> = {};
 
-  const initial: Record<string, Record<string, "yes" | "no" | null>> = {};
-  shareData.room_detail.forEach((room: any, idx: number) => {
-    const roomName = room.roomName || `Room ${idx + 1}`;
-    const prevRoomData =
-      defaultData?.room_amenities?.[roomName] ||
-      shareData?.room_amenities?.[roomName] ||
-      {};
+    shareData.room_detail.forEach((room: any, idx: number) => {
+      const roomName = room.roomName || `Room ${idx + 1}`;
 
-    const roomAmenities: Record<string, "yes" | "no" | null> = {};
-    dbAmenities.forEach((a) => {
-      roomAmenities[a.title] = prevRoomData[a.title] ?? null;
+      const defaultCategory = defaultData?.find(
+        (r: any) => r.category === roomName
+      );
+      const defaultRoomAmenities = defaultCategory?.amenities || [];
+
+      const sharedRoomAmenities = shareData?.room_amenities?.[roomName] || {};
+
+      const roomAmenities: Record<string, "yes" | "no" | null> = {};
+
+      dbAmenities.forEach((a: any) => {
+        const title = a.title;
+
+        const existingValue =
+          defaultRoomAmenities.find((d: any) => d.title === title)?.value ??
+          sharedRoomAmenities[title] ??
+          null;
+
+        roomAmenities[title] =
+          existingValue === "yes"
+            ? "yes"
+            : existingValue === "no"
+              ? "no"
+              : null;
+      });
+
+      initial[roomName] = roomAmenities;
     });
 
-    initial[roomName] = roomAmenities;
-  });
+    setSelectedAmenities(initial);
+  }, [shareData]);
 
-  setSelectedAmenities(initial);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [shareData?.room_detail, dbAmenities]);
 
-// Debounced sync with parent data (like Location component)
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setShareData((prev: any) => ({
-      ...prev,
-      room_amenities: selectedAmenities,
-    }));
-  }, 300);
 
-  return () => clearTimeout(timer);
-}, [selectedAmenities, setShareData]);
+
+
+
+
+  // Debounced sync with parent data (like Location component)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShareData((prev: any) => ({
+        ...prev,
+        room_amenities: selectedAmenities,
+      }));
+    }, 300);
+    console.log(shareData, 'shareData');
+
+    return () => clearTimeout(timer);
+  }, [selectedAmenities, setShareData]);
 
   // Handle yes/no selection
   const handleAmenityChoice = (
@@ -99,16 +120,16 @@ useEffect(() => {
     }));
   };
 
-const handleNext = async () => {
-  setLoading(true);
-  if (Object.keys(selectedAmenities).length === 0) {
-    alert("Please select at least one amenity.");
+  const handleNext = async () => {
+    setLoading(true);
+    if (Object.keys(selectedAmenities).length === 0) {
+      alert("Please select at least one amenity.");
+      setLoading(false);
+      return;
+    }
+    setTab("Room Photos");
     setLoading(false);
-    return;
-  }
-  setTab("Room Photos");
-  setLoading(false);
-};
+  };
 
 
   // Summary Info
@@ -198,11 +219,10 @@ const handleNext = async () => {
                 <button
                   key={idx}
                   onClick={() => scrollToRoom(roomName)}
-                  className={`flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                    activeRoom === roomName
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "hover:bg-muted/40"
-                  }`}
+                  className={`flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm transition-all ${activeRoom === roomName
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-muted/40"
+                    }`}
                 >
                   <span>{roomName}</span>
                   {selectedCount === total && (
@@ -248,13 +268,12 @@ const handleNext = async () => {
                     {dbAmenities.map((data) => (
                       <Card
                         key={data._id}
-                        className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-200 ${
-                          roomAmenities[data.title] === "yes"
-                            ? "border-green-500 shadow-md"
-                            : roomAmenities[data.title] === "no"
+                        className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-200 ${roomAmenities[data.title] === "yes"
+                          ? "border-green-500 shadow-md"
+                          : roomAmenities[data.title] === "no"
                             ? "border-red-400"
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <span className="font-medium text-base truncate">

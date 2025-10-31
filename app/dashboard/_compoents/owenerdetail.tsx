@@ -14,21 +14,26 @@ import { useSession } from "next-auth/react";
 import Header from "./header";
 import { useAppContext } from "@/app/contextapi";
 
-
+// ✅ Improved Zod validation schema
 const ownerSchema = z.object({
-  ownerName: z.string().min(1, "Owner name is required"),
+  ownerName: z
+    .string()
+    .min(3, "Owner name must be at least 3 characters")
+    .max(50, "Owner name too long"),
   ownerPhone: z
+    .string()
+    .min(10, "Phone must be 10 digits")
+    .max(10, "Phone must be 10 digits")
+    .regex(/^[0-9]{10}$/, "Phone must contain only numbers"),
+  ownerAltPhone: z
     .string()
     .optional()
     .refine((val) => !val || /^[0-9]{10}$/.test(val), {
-      message: "Phone must be 10 digits",
+      message: "Alternate phone must be 10 digits",
     }),
-  ownerAltPhone: z.string().optional(),
-  ownerEmail: z
+   ownerEmail: z
     .string()
-    .email("Invalid email")
-    .optional()
-    .or(z.literal("")),
+    .email("Invalid email address"),
   ownerCompany: z.string().optional(),
   ownerGstin: z
     .string()
@@ -45,29 +50,28 @@ const ownerSchema = z.object({
     }),
 });
 
-
 type OwnerFormValues = z.infer<typeof ownerSchema>;
 
 interface OwnerDetailsProps {
   shareData: any;
   setShareData: (value: any) => void;
   handleNext?: () => void;
-  defaultData: any
+  defaultData: any;
 }
 
 const OwnerDetails: React.FC<OwnerDetailsProps> = ({
   shareData,
   setShareData,
   handleNext,
-  defaultData
+  defaultData,
 }) => {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext();
 
-
   const form = useForm<OwnerFormValues>({
     resolver: zodResolver(ownerSchema),
+    mode: "onChange",
     defaultValues: {
       ownerName: "",
       ownerPhone: "",
@@ -87,11 +91,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
     }
   }, [defaultData]);
 
-
-
-  // Update shared data when form changes
   useEffect(() => {
-
     const subscription = form.watch((values) => {
       setShareData((prev: any) => ({
         ...prev,
@@ -104,8 +104,8 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
 
   const fields = [
     { name: "ownerName", label: "Owner Name *", placeholder: "Full legal name" },
-    { name: "ownerPhone", label: "Phone", icon: <Phone className="w-4 h-4 text-primary" />, placeholder: "+91 98xxxxxx" },
-    { name: "ownerAltPhone", label: "Alt. Phone", placeholder: "+91 9xxxxxxx" },
+    { name: "ownerPhone", label: "Phone *", icon: <Phone className="w-4 h-4 text-primary" />, placeholder: "10-digit number" },
+    { name: "ownerAltPhone", label: "Alt. Phone", placeholder: "10-digit number" },
     { name: "ownerEmail", label: "Email", icon: <Mail className="w-4 h-4 text-primary" />, placeholder: "owner@email.com" },
     { name: "ownerCompany", label: "Company (optional)", icon: <Landmark className="w-4 h-4 text-primary" />, placeholder: "Legal entity / trade name" },
     { name: "ownerGstin", label: "GSTIN (optional)", placeholder: "15-digit GSTIN" },
@@ -113,14 +113,9 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
   ];
 
   const onSubmit = async (values: OwnerFormValues) => {
-    console.log(shareData);
-    
     try {
       setLoading(true);
-
-      // merge with parent shared data
       const payload = { ...shareData, owner_details: values };
-
       const res = await fetch(`/api/listproperty/add?ownerId=${session?.user?.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,7 +125,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
       if (!res.ok) throw new Error("Failed to save data");
       const result = await res.json();
       if (result.success) {
-        toast.success("details saved successfully");
+        toast.success("Details saved successfully");
       }
       handleNext?.();
     } catch (err: any) {
@@ -143,14 +138,18 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
 
   return (
     <div className="flex flex-col min-h-screen w-full">
-      <Header title="Owner / Host Details" description="Provide owner’s verified contact details for communication and KYC." />
-      {/* Form */}
+      <Header
+      status={form.formState.isValid}
+        title="Owner / Host Details"
+        description="Provide owner’s verified contact details for communication and KYC."
+      />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex-1 px-4 sm:px-6 md:px-10 py-8 max-w-6xl mx-auto w-full"
+          className="flex-1 px-4 sm:px-6 md:px-10 max-w-6xl mx-auto w-full"
         >
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-0 shadow-none px-4 rounded-none">
+            <h1 className="text-xl font-normal">Fill Your Details</h1>
             <CardContent className="p-8 space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {fields.map(({ name, label, icon, placeholder }) => (
@@ -188,7 +187,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={!form.formState.isValid || loading}
                   className="flex items-center gap-2 min-w-[140px]"
                 >
                   {loading ? (

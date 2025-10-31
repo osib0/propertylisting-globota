@@ -70,21 +70,21 @@ export default function PropertyDetails({ setShareData, shareData, defaultData }
     }
   }, []);
 
-useEffect(() => {
-  if (defaultData && !shareData?.property_detail) {
-    form.reset(defaultData);
-  }
-}, [defaultData, shareData, form]);
+  useEffect(() => {
+    if (defaultData && !shareData?.property_detail) {
+      form.reset(defaultData);
+    }
+  }, [defaultData, shareData, form]);
 
-useEffect(() => {
-  const subscription = form.watch((values) => {
-    setShareData((prev: any) => ({
-      ...prev,
-      property_detail: values,
-    }));
-  });
-  return () => subscription.unsubscribe();
-}, [form, setShareData]);
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      setShareData((prev: any) => ({
+        ...prev,
+        property_detail: values,
+      }));
+    });
+    return () => subscription.unsubscribe();
+  }, [form, setShareData]);
 
 
 
