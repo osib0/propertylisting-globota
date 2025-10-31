@@ -17,7 +17,8 @@ const RoomSchema = new Schema(
     roomType: { type: String },
     numRooms: { type: Number },
     roomView: { type: String },
-    roomSize: { type: String },
+    roomSizeValue: { type: Number },
+    roomSizeUnit: { type: String },
     numBathrooms: { type: Number },
     description: { type: String },
   },
@@ -54,15 +55,6 @@ const OccupancySchema = new Schema(
   { _id: false }
 );
 
-const SleepingArrangementSchema = new Schema(
-  {
-    bedTypes: [BedTypeSchema],
-    extraBed: { type: String, enum: ["yes", "no"], default: "no" },
-    alternateBed: { type: String, enum: ["yes", "no"], default: "no" },
-    occupancy: OccupancySchema,
-  },
-  { _id: false }
-);
 
 
 const DocumentsSchema = new Schema(
@@ -75,13 +67,6 @@ const DocumentsSchema = new Schema(
     docNoc: { type: DocumentFileSchema },
     docOther: { type: DocumentFileSchema },
     docNotes: { type: String },
-  },
-  { _id: false }
-);
-const CategoryPhotosSchema = new Schema(
-  {
-    url: { type: String },
-    file: { type: Schema.Types.Mixed, default: null },
   },
   { _id: false }
 );

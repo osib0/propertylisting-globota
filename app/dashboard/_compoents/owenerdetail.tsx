@@ -113,6 +113,8 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
   ];
 
   const onSubmit = async (values: OwnerFormValues) => {
+    console.log(shareData,'shareData');
+    
     try {
       setLoading(true);
       const payload = { ...shareData, owner_details: values };

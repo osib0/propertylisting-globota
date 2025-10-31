@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model,Types } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -10,6 +10,7 @@ export interface IUser extends Document {
   first_name?: string;
   last_name?: string;
   password?: string;
+  propertyId?: Types.ObjectId;
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -22,7 +23,7 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     email: {
       type: String,
-      unique: false, 
+      unique: false,
       sparse: true,
       trim: true,
     },
@@ -35,6 +36,11 @@ const UserSchema: Schema<IUser> = new Schema(
     first_name: String,
     last_name: String,
     password: String,
+
+    propertyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Property",
+    },
   },
   { timestamps: true }
 );

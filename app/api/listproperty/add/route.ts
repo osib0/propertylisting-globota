@@ -2,8 +2,7 @@ import dbConnect from "@/lib/db";
 import listpropertyModel from "@/model/listproperty.model";
 import { NextResponse } from "next/server";
 
-// ✅ Transform room_amenities before saving
-const formatRoomAmenities = (data: any) => {
+const formatRoomAmenities = (data: Record<string, any>) => {
   if (!data || typeof data !== "object") return [];
 
   const formatted = [];

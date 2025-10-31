@@ -13,12 +13,16 @@ import Documents from './document';
 import OwnerDetails from './owenerdetail';
 import ManageInventory from './inventory';
 import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 
 const Alltabs = () => {
     const [shareData, setShareData] = useState<any>({});
-    const { isTab,isListingData } = useAppContext();
+    const { isTab,isListingData ,isAprove} = useAppContext();
     const { data: session } = useSession();
      
+    if (isAprove) {
+        redirect('/dashboard/basic-info')
+    }
 
     return (
         <> 

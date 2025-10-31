@@ -3,6 +3,7 @@ import listpropertyModel from "@/model/listproperty.model";
 import propertyModel from "@/model/property.model";
 import roomModel from "@/model/rooms.model";
 import propertyPhotoModel from "@/model/propertyPhotos.model";
+import UserModel from "@/model/user.model";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -28,13 +29,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔹 Prepare data for main property collection
     const propertyData = {
       property_id: listProp._id.toString(),
       property_name: listProp.property_detail?.propertyTitle || "",
       display_name: listProp.property_detail?.propertyTitle || "",
       email: listProp.property_detail?.email || "",
       phone: listProp.owner_details?.ownerPhone || "",
+      landline_number:listProp.owner_details?.ownerAltPhone || "",
       property_type: listProp.property_detail?.propertyType || "",
       property_build: listProp.property_detail?.propertyBuildYear || "",
       accepting_booking_since: listProp.property_detail?.bookingSinceYear || "",
@@ -58,48 +59,46 @@ export async function POST(req: Request) {
         })) || [],
     };
 
-    // 🔹 Save to main Property collection
     const newProperty = await propertyModel.create(propertyData);
 
-    // 🔹 Save room details
-    if (Array.isArray(listProp.room_detail) && listProp.room_detail.length > 0) {
-      const roomsToInsert = listProp.room_detail.map((room: any) => ({
-        room_name: room.roomName || "",
-        propertyId: newProperty._id,
-        description: room.description || "",
-        room_area: "",
-        unit: "sqft",
-        room_quantity: room.numRooms || 1,
-        room_type: room.roomType || "",
-        room_view: room.roomView || "",
-        bedTypes: listProp.sleepingArrangement?.bedTypes || [],
-        alternateBed: listProp.sleepingArrangement?.alternateBed || "no",
-        extraBed: listProp.sleepingArrangement?.extraBed || "no",
-        occupancy:
-          listProp.sleepingArrangement?.occupancy || {
-            baseAdults: 2,
-            maxAdults: 3,
-            maxChildren: 2,
-            maxOccupancy: 4,
-          },
-        bathroomCount: room.numBathrooms || 1,
-        room_amenities:
-          listProp.room_amenities?.amenities?.map((item: any) => ({
-            category_id: item._id || null,
-            item: [
-              {
-                id: item._id || null,
-                featured: item.value === "yes",
-              },
-            ],
-          })) || [],
-        files:
-          listProp.room_photos?.find((rp: any) => rp.category === room.roomName)
-            ?.photos || [],
-      }));
+    // if (Array.isArray(listProp.room_detail) && listProp.room_detail.length > 0) {
+    //   const roomsToInsert = listProp.room_detail.map((room: any) => ({
+    //     room_name: room.roomName || "",
+    //     propertyId: newProperty._id,
+    //     description: room.description || "",
+    //     room_area: "",
+    //     unit: "sqft",
+    //     room_quantity: room.numRooms || 1,
+    //     room_type: room.roomType || "",
+    //     room_view: room.roomView || "",
+    //     bedTypes: listProp.sleepingArrangement?.bedTypes || [],
+    //     alternateBed: listProp.sleepingArrangement?.alternateBed || "no",
+    //     extraBed: listProp.sleepingArrangement?.extraBed || "no",
+    //     occupancy:
+    //       listProp.sleepingArrangement?.occupancy || {
+    //         baseAdults: 2,
+    //         maxAdults: 3,
+    //         maxChildren: 2,
+    //         maxOccupancy: 4,
+    //       },
+    //     bathroomCount: room.numBathrooms || 1,
+    //     room_amenities:
+    //       listProp.room_amenities?.amenities?.map((item: any) => ({
+    //         category_id: item._id || null,
+    //         item: [
+    //           {
+    //             id: item._id || null,
+    //             featured: item.value === "yes",
+    //           },
+    //         ],
+    //       })) || [],
+    //     files:
+    //       listProp.room_photos?.find((rp: any) => rp.category === room.roomName)
+    //         ?.photos || [],
+    //   }));
 
-      await roomModel.insertMany(roomsToInsert);
-    }
+    //   await roomModel.insertMany(roomsToInsert);
+    // }
 
     // 🔹 Save property photos (safe handling)
     const photoData: any[] = [];
@@ -122,15 +121,23 @@ export async function POST(req: Request) {
       await propertyPhotoModel.insertMany(photoData);
     }
 
-    // 🔹 Mark approved
+    // Mark approved
     await listpropertyModel.updateOne(
       { ownerId },
       { $set: { approved: true } }
     );
+    const user = await UserModel.findOneAndUpdate(
+      { _id: ownerId },
+      { $set: { propertyId: newProperty._id } },
+      { new: true }
+    );
 
+    if (!user) {
+      console.warn(`User with ID ${ownerId} not found`);
+    }
     return NextResponse.json({
       success: true,
-      message: "✅ Property approved & moved successfully",
+      message: "Property approved & moved successfully",
       data: newProperty,
     });
   } catch (error: any) {

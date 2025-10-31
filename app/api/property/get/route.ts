@@ -2,25 +2,25 @@ import dbConnect from "@/lib/db";
 import propertyModel from "@/model/property.model";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET(req: Request, { params }: any) {
+
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
+    const id = searchParams.get('propertyId')
+    const properties = await propertyModel.findById(id)
 
-    if (!email) {
-      return NextResponse.json({ success: false, error: "Email required" }, { status: 400 });
-    }
-
-    const property = await propertyModel.findOne({ email });
-
-    if (!property) {
-      return NextResponse.json({ success: false, error: "No property found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: property });
+    return NextResponse.json({
+      status: true,
+      data: properties,
+    });
   } catch (error: any) {
-    console.error("Fetch Property Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: false,
+        error: error.message || "Failed to fetch properties",
+      },
+      { status: 500 }
+    );
   }
 }

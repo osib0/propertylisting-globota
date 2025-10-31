@@ -2,7 +2,6 @@
 import { useAppContext } from "@/app/contextapi"
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useState } from "react";
 import { signOut } from "next-auth/react"
 import { LogOut } from "lucide-react";
@@ -52,12 +51,6 @@ const SidebartriggerCompoent = () => {
     }
 
 
-    return (
-        <>
-            <SidebarTrigger className="fixed z-50 right-2 top-2" />
-
-        </>
-    )
 }
 
 export default SidebartriggerCompoent
