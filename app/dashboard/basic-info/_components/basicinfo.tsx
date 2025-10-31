@@ -179,7 +179,7 @@ const BasicInfo = () => {
           </CardTitle>
         </CardHeader>
 
-        <CardContent>
+        {/* <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {(loading ? Array.from({ length: inputs.length }) : inputs).map((field, i) => {
               const { label, key, type } = field || {};
@@ -315,7 +315,7 @@ const BasicInfo = () => {
               )}
             </div>
           )}
-        </CardContent>
+        </CardContent> */}
       </Card>
    
   );
