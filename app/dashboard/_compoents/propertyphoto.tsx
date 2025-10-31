@@ -11,125 +11,101 @@ import {
   Form,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
   FormControl,
 } from "@/components/ui/form";
 
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Images, Trash, ArrowRight } from "lucide-react";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import { Loader2, Trash, ArrowRight, ImageIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppContext } from "@/app/contextapi";
 import Header from "./header";
 
 // -------------------------
-// Constants & Schema
+// Schema
 // -------------------------
-const CATEGORIES = [
-  "Entrance/Facade",
-  "Reception",
-  "Lobby",
-  "Restaurant",
-  "Parking",
-  "Terrace",
-  "Public Area",
-  "Events",
-  "Swimming Pool",
-  "Bar",
-  "Cafe",
-] as const;
-
 const formSchema = z.object({
-  property_photos: z.record(
-    z.string(),
-    z.array(
-      z.object({
-        url: z.string().url(),
-      })
-    )
-  ),
+  property_photos: z.array(
+    z.object({
+      url: z.string().url(),
+    })
+  ).min(3, "At least 3 photos are required"),
 });
+
 
 type PropertyPhotosSchema = z.infer<typeof formSchema>;
 
-// -------------------------
-// Props Interface
-// -------------------------
 interface PropertyPhotosProps {
   setShareData: React.Dispatch<React.SetStateAction<any>>;
   shareData: any;
-  defaultData:any
+  defaultData: any;
 }
 
-// -------------------------
-// Component
-// -------------------------
 export default function PropertyPhotos({
   setShareData,
   shareData,
-  defaultData
+  defaultData,
 }: PropertyPhotosProps) {
-  const [activeCategory, setActiveCategory] = useState<(typeof CATEGORIES)[number]>(
-    CATEGORIES[0]
-  );
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext();
 
   const form = useForm<PropertyPhotosSchema>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
     defaultValues: {
-      property_photos: CATEGORIES.reduce(
-        (acc, cat) => ({
-          ...acc,
-          [cat]: shareData?.property_photos?.[cat] || [],
-        }),
-        {} as Record<string, { url: string }[]>
-      ),
+      property_photos: shareData?.property_photos || defaultData || [],
     },
   });
-  
+
+  // Reset form when defaultData changes
   useEffect(() => {
-  if (defaultData) {
-    form.reset({
-      property_photos: CATEGORIES.reduce(
-        (acc, cat) => ({
-          ...acc,
-          [cat]: defaultData[cat] || [],
-        }),
-        {} as Record<string, { url: string }[]>
-      ),
-    });
-  }
-}, [defaultData, form]);
+    const defaultPhotos = defaultData?.property_photos;
+    const sharedPhotos = shareData?.property_photos;
+
+    if (photos?.length > 0) return;
+
+    setLoading(true);
+    setTimeout(() => {
+      if (defaultPhotos?.length > 0) {
+        form.reset({ property_photos: defaultPhotos });
+      } else if (sharedPhotos?.length > 0) {
+        form.reset({ property_photos: sharedPhotos });
+      }
+      setLoading(false);
+    }, 600);
+    console.log(shareData, 'shareData');
+
+  }, [defaultData, form]);
 
 
-  const photosByCategory: any = form.watch("property_photos");
 
-  const syncWithParent = useCallback(() => {
+  const photos = form.watch("property_photos");
+
+  // Sync data with parent
+  // const syncWithParent = useCallback(() => {
+  //   setShareData((prev: any) => ({
+  //     ...prev,
+  //     property_photos: photos,
+  //   }));
+  // }, [defaultData, shareData,form]);
+
+  useEffect(() => {
+    form.trigger("property_photos");
     setShareData((prev: any) => ({
       ...prev,
-      property_photos: photosByCategory,
+      property_photos: photos,
     }));
-  }, [photosByCategory, setShareData]);
+    console.log(shareData);
 
-  useEffect(() => {
-    syncWithParent();
-  }, [syncWithParent]);
+  }, [photos, setShareData]);
 
   // -------------------------
   // Upload Handler
   // -------------------------
-  const handlePhotoUpload = async (files: File[], category: string) => {
+  const handlePhotoUpload = async (files: File[]) => {
     setUploading(true);
-
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
@@ -142,112 +118,124 @@ export default function PropertyPhotos({
         });
 
         const data = await res.json();
-        const signedUrl: string | undefined = data.signedUrl || data.url;
+        const signedUrl: string = data.signedUrl || data.url;
 
         if (signedUrl) {
-          const updated = [...(photosByCategory[category] || []), { url: signedUrl }];
-          form.setValue(`property_photos.${category}`, updated);
+          form.setValue("property_photos", [
+            ...photos,
+            { url: signedUrl },
+          ]);
         }
       } catch (err) {
         console.error("Upload failed:", err);
       }
     }
-
     setUploading(false);
   };
 
   // -------------------------
   // Remove Photo
   // -------------------------
-  const removePhoto = (category: string, idx: number) => {
-    const updated = photosByCategory[category].filter((category: string, i: number) => i !== idx);
-    form.setValue(`property_photos.${category}`, updated);
+  const removePhoto = (idx: number) => {
+    const updated = photos.filter((_, i) => i !== idx);
+    form.setValue("property_photos", updated);
+  };
+
+  const handleNext = async () => {
+    const valid = await form.trigger();
+    if (valid) {
+      setTab("Room Details")
+    }
   };
 
 
-  // -------------------------
-  // JSX
-  // -------------------------
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="flex flex-col min-h-screen w-full bg-muted/30">
       <Form {...form}>
         <form className="flex flex-col flex-1">
-            <Header title="Property Photos" description="Upload cover and gallery photos for each category." />
-          {/* Category Tabs */}
-          <div className="p-6 flex-1 overflow-y-auto">
-            <h4 className="text-sm font-medium mb-2 text-muted-foreground">
-              Categories
-            </h4>
+          <Header
+            status={form.formState.isValid}
+            title="Property Photos"
+            description="Upload property cover and gallery photos."
+          />
 
-            <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as (typeof CATEGORIES)[number])}>
-              <TabsList className="flex flex-wrap gap-2 mb-4 h-full">
-                {CATEGORIES.map((cat) => (
-                  <TabsTrigger key={cat} value={cat} className="capitalize w-full">
-                    {cat}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+          <div className="p-6 flex-1 overflow-y-auto space-y-6 max-w-7xl mx-auto bg-white w-full">
+            <div>
+              <h1 className="text-xl font-semibold mb-1">
+                Upload Photos
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Upload high-quality property images (JPG, PNG, WebP)
+              </p>
+            </div>
 
-              {CATEGORIES.map((cat) => (
-                <TabsContent key={cat} value={cat} className="my-6">
-                  <FormField
-                    control={form.control}
-                    name={`property_photos.${cat}`}
-                    render={() => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">{cat}</FormLabel>
-                        <FormControl>
-                          <Dropzone
-                            multiple
-                            onFiles={(files) => handlePhotoUpload(files, cat)}
-                            note="Upload high-quality JPG, PNG, or WebP images."
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Photo Grid */}
-                  {photosByCategory[cat]?.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {photosByCategory[cat].map((photo: { url: string | StaticImport; }, idx: number) => (
-                        <Card
-                          key={idx}
-                          className="relative overflow-hidden group rounded-xl border p-0"
-                        >
-                          <Image
-                            src={photo.url}
-                            alt={`photo-${idx}`}
-                            width={2000}
-                            height={2000}
-                            className="object-cover w-full h-full"
-                          />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => removePhoto(cat, idx)}
-                              className="flex items-center gap-1"
-                            >
-                              <Trash className="w-4 h-4" />
-                              Remove
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
+            {/* Photo Grid */}
+            {loading ? (
+              <SkeletonGrid />
+            ) : photos.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 my-6">
+                {photos.map((photo, idx) => (
+                  <Card
+                    key={idx}
+                    className="relative overflow-hidden group rounded-xl border p-0 shadow-sm"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt={`photo-${idx}`}
+                      width={400}
+                      height={400}
+                      className="object-cover w-full h-48 sm:h-56 rounded-xl transition-all duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removePhoto(idx)}
+                        className="flex items-center gap-1"
+                      >
+                        <Trash className="w-4 h-4" />
+                        Remove
+                      </Button>
                     </div>
-                  )}
-                </TabsContent>
-              ))}
-            </Tabs>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center my-10 py-8  bg-muted/10">
+                <ImageIcon className="w-10 h-10 text-muted-foreground mb-2" />
+                <p className="text-muted-foreground text-sm">
+                  No photos uploaded yet
+                </p>
+              </div>
+            )}
+
+            {/* Dropzone */}
+            <FormField
+              control={form.control}
+              name="property_photos"
+              render={() => (
+                <FormItem>
+                  <FormControl>
+                    <Dropzone
+                      multiple
+                      onFiles={(files) => handlePhotoUpload(files)}
+                      note="Upload JPG, PNG, or WebP images (max size 5MB)."
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          {/* Footer */}
+          {/* Footer Buttons */}
           <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
-
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => setTab('Property Amenities')} >
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setTab("Property Amenities")}
+            >
               Back
             </Button>
 
@@ -255,7 +243,7 @@ export default function PropertyPhotos({
               type="button"
               disabled={uploading}
               className="flex items-center gap-2"
-              onClick={()=>setTab('Room Details')}
+              onClick={handleNext}
             >
               {uploading ? (
                 <>
@@ -277,6 +265,9 @@ export default function PropertyPhotos({
 // -------------------------
 // Dropzone Component
 // -------------------------
+// -------------------------
+// Dropzone Component (Beautified)
+// -------------------------
 function Dropzone({
   onFiles,
   multiple = true,
@@ -296,21 +287,63 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${isDragActive ? "border-primary bg-primary/5" : "border-muted"
+      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+        ${isDragActive
+          ? "border-primary bg-primary/10 shadow-md scale-[1.01]"
+          : "border-muted bg-muted/5 hover:bg-muted/10 hover:border-primary/60"
         }`}
     >
       <input {...getInputProps()} />
-      <p className="text-sm text-muted-foreground">
-        <strong>Drag & drop</strong> files here, or{" "}
-        <button
-          type="button"
-          onClick={open}
-          className="text-primary underline font-medium"
+
+      <div className="flex flex-col items-center justify-center space-y-3">
+        <div
+          className={`w-14 h-14 rounded-full flex items-center justify-center 
+            ${isDragActive ? "bg-primary text-white" : "bg-muted text-primary"}`}
         >
-          browse
-        </button>
-      </p>
-      {note && <p className="text-xs text-muted-foreground mt-1">{note}</p>}
+          <ImageIcon className="w-7 h-7" />
+        </div>
+
+        <div>
+          <p className="text-sm text-muted-foreground">
+            <strong>Drag & drop</strong> images here
+          </p>
+          <p className="text-sm text-muted-foreground">
+            or{" "}
+            <button
+              type="button"
+              onClick={open}
+              className="text-primary font-medium underline-offset-4 hover:underline"
+            >
+              browse files
+            </button>
+          </p>
+        </div>
+
+        {note && (
+          <p className="text-xs text-muted-foreground mt-2">{note}</p>
+        )}
+      </div>
+
+      {/* Animated border glow */}
+      <div
+        className={`absolute inset-0 rounded-xl border-2 border-primary/30 opacity-0 
+          transition-opacity duration-300 pointer-events-none
+          ${isDragActive ? "opacity-100" : "opacity-0"}`}
+      ></div>
+    </div>
+  );
+}
+
+
+// -------------------------
+// Skeleton Grid Component
+// -------------------------
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 my-6">
+      {[...Array(6)].map((_, i) => (
+        <Skeleton key={i} className="w-full h-48 sm:h-56 rounded-xl" />
+      ))}
     </div>
   );
 }

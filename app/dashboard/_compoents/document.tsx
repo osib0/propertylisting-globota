@@ -157,8 +157,7 @@ const Documents: React.FC<DocumentsProps> = ({
         <div className="flex flex-col min-h-screen w-full">
             <Header title="Documents" description="Upload necessary verification documents (PDF or Images)" />
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 mx-auto">
-                <Card>
+                <Card className="shadow-none border-0  max-w-4xl mx-auto rounded-none">
                     <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                         {[
                             { label: "GST Certificate", key: "docGST" },
@@ -233,8 +232,6 @@ const Documents: React.FC<DocumentsProps> = ({
                         </div>
                     </CardContent>
                 </Card>
-
-            </div>
 
             <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
                 <Button

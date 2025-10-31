@@ -51,30 +51,32 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
 
     const form = useForm<LocationFormData>({
         resolver: zodResolver(locationSchema),
+        mode: 'onChange',
         defaultValues: {
-            addressLine1: defaultData?.addressLine1 || "",
-            addressLine2: defaultData?.addressLine2 || "",
-            landmark: defaultData?.landmark || "",
-            city: defaultData?.city || "",
-            stateName: defaultData?.stateName || "",
-            country: defaultData?.country || "India",
-            pincode: defaultData?.pincode || "",
+            addressLine1: shareData?.location?.addressLine1 || defaultData?.addressLine1 || "",
+            addressLine2: shareData?.location?.addressLine2 || defaultData?.addressLine2 || "",
+            landmark: shareData?.location?.landmark || defaultData?.landmark || "",
+            city: shareData?.location?.city || defaultData?.city || "",
+            stateName: shareData?.location?.stateName || defaultData?.stateName || "",
+            country: shareData?.location?.country || defaultData?.country || "India",
+            pincode: shareData?.location?.pincode || defaultData?.pincode || "",
         },
-    });
 
+    });
     // Sync data with parent
     useEffect(() => {
         const subscription = form.watch((values) => {
-            const timeout = setTimeout(() => {
+            const timer = setTimeout(() => {
                 setShareData((prev: any) => ({
                     ...prev,
                     location: values,
                 }));
-            }, 400);
-            return () => clearTimeout(timeout);
+            }, 300);
+            return () => clearTimeout(timer);
         });
         return () => subscription.unsubscribe();
     }, [form, setShareData]);
+
 
 
 
@@ -90,17 +92,19 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
 
     return (
         <div className="flex flex-col w-full">
-            <Header title="Location" description="Provide your property address and pin it on the map." />
+            <Header status={form.formState.isValid} title="Location" description="Provide your property address and pin it on the map." />
             <div className="flex-1 overflow-y-auto p-6">
-                <Card className="p-6 w-full max-w-5xl mx-auto border">
+                <Card className="p-6 w-full max-w-4xl mx-auto border-0 rounded-xl shadow-none bg-white">
+                    <h1 className="text-xl font-normal">Add Location Details</h1>
+
                     <Form {...form}>
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-5">
                                 <FormField
                                     control={form.control}
                                     name="addressLine1"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="relative">
                                             <FormLabel>
                                                 Address Line 1 <span className="text-red-500">*</span>
                                             </FormLabel>
@@ -110,7 +114,7 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="absolute -bottom-5 text-xs" />
                                         </FormItem>
                                     )}
                                 />
@@ -118,12 +122,12 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                     control={form.control}
                                     name="landmark"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="relative">
                                             <FormLabel>Landmark</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Near ..." {...field} />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="absolute -bottom-5 text-xs" />
                                         </FormItem>
                                     )}
                                 />
@@ -131,7 +135,7 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                     control={form.control}
                                     name="addressLine2"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="relative">
                                             <FormLabel>Address Line 2</FormLabel>
                                             <FormControl>
                                                 <Input
@@ -139,7 +143,7 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="absolute -bottom-5 text-xs" />
                                         </FormItem>
                                     )}
                                 />
@@ -148,14 +152,14 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                         control={form.control}
                                         name="city"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>
                                                     City <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Jaisalmer" {...field} />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="absolute -bottom-5 text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -163,14 +167,14 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                         control={form.control}
                                         name="stateName"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>
                                                     State <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Rajasthan" {...field} />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="absolute -bottom-5 text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -180,12 +184,12 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                         control={form.control}
                                         name="country"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Country</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="India" {...field} />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="absolute -bottom-5 text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -193,12 +197,12 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
                                         control={form.control}
                                         name="pincode"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Pincode</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="6-digit pincode" {...field} />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="absolute -bottom-5 text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -207,7 +211,7 @@ export default function Location({ shareData = {}, setShareData, defaultData }: 
 
                             {/* Right Column - Map Picker */}
                             <div className="flex flex-col">
-                                <FormItem>
+                                <FormItem className="relative">
                                     <FormLabel>Pick on Map</FormLabel>
                                     <div className="h-80 rounded-lg overflow-hidden border">
                                         <MapPicker

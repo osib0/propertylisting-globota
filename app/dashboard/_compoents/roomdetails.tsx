@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2, PlusCircle, Info, Loader2, ArrowRight } from "lucide-react";
 
@@ -17,7 +17,6 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -36,11 +35,11 @@ import Header from "./header";
 // Validation Schema
 // --------------------------
 const roomSchema = z.object({
-    roomName: z.string().min(1, "Room name is required"),
-    roomType: z.string().min(1, "Room type is required"),
-    numRooms: z.number().min(1),
-    roomView: z.string().optional(),
-    roomSizeValue: z.number().nullable(),
+    roomName: z.string().min(3, "Room name is required"),
+    roomType: z.string().min(3, "Room type is required"),
+    numRooms: z.number().min(1, "Room one is required"),
+    roomView: z.string().min(1, "Room view is required"),
+    roomSizeValue: z.number().min(2, 'Room size is required'),
     roomSizeUnit: z.enum(["sqft", "sqm"]),
     numBathrooms: z.number().min(1),
     description: z.string().optional(),
@@ -68,18 +67,19 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
     const { setTab } = useAppContext();
 
 
-
     const form = useForm<FormSchema>({
         resolver: zodResolver(formSchema),
+        mode: "onChange",
+        reValidateMode: "onChange",
         defaultValues: {
             room_detail:
-                shareData?.room_detail || [
+                shareData?.room_detail || defaultData || [
                     {
                         roomName: "",
                         roomType: "",
                         numRooms: 1,
                         roomView: "",
-                        roomSizeValue: null,
+                        roomSizeValue: 1,
                         roomSizeUnit: "sqft",
                         numBathrooms: 1,
                         description: "",
@@ -88,27 +88,29 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
         },
     });
 
+
     const { fields, append, remove } = useFieldArray({
         control: form.control,
         name: "room_detail",
     });
 
-    useEffect(() => {
-        if (defaultData) {
-            form.reset({
-                room_detail: defaultData.map((room: any) => ({
-                    roomName: room.roomName || "",
-                    roomType: room.roomType || "",
-                    numRooms: room.numRooms || 1,
-                    roomView: room.roomView || "",
-                    roomSizeValue: room.roomSizeValue || null,
-                    roomSizeUnit: room.roomSizeUnit || "sqft",
-                    numBathrooms: room.numBathrooms || 1,
-                    description: room.description || "",
-                })),
-            });
-        }
-    }, [defaultData, form]);
+    // useEffect(() => {
+    //     if (defaultData && !form.formState.isDirty) {
+    //         form.reset({
+    //             room_detail: defaultData.map((room: any) => ({
+    //                 roomName: room.roomName || "",
+    //                 roomType: room.roomType || "",
+    //                 numRooms: room.numRooms || 1,
+    //                 roomView: room.roomView || "",
+    //                 roomSizeValue: room.roomSizeValue || 1,
+    //                 roomSizeUnit: room.roomSizeUnit || "sqft",
+    //                 numBathrooms: room.numBathrooms || 1,
+    //                 description: room.description || "",
+    //             })),
+    //         });
+    //     }
+    // }, [defaultData]);
+
 
     const rooms = form.watch("room_detail");
 
@@ -119,6 +121,15 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
             room_detail: rooms,
         }));
     }, [rooms, setShareData]);
+
+
+    useEffect(() => {
+        setShareData((prev: any) => ({
+            ...prev,
+            room_detail: form.getValues("room_detail"),
+        }));
+    }, [form.watch("room_detail")]);
+
 
     // Fetch room types
     useEffect(() => {
@@ -138,6 +149,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
         })();
     }, []);
 
+
+
     // Fetch room views
     useEffect(() => {
         (async () => {
@@ -148,6 +161,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
             );
         })();
     }, []);
+
+
 
 
     const handleNext = async () => {
@@ -163,17 +178,19 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
         <div className="flex flex-col w-full min-h-screen">
             <Form {...form}>
                 <form className="flex flex-col flex-1">
-                    <Header title="Room Details" description="Provide rooms details" />
+                    <Header status={form.formState.isValid} title="Room Details" description="Provide rooms details" />
 
                     {/* Form Fields */}
                     <div className="p-6 space-y-8">
-                        <div className="flex justify-end">
+                        <div className="flex w-full max-w-4xl mx-auto justify-between bg-white p-3 rounded-xl">
+                            <h1 className="text-xl font-normal">Create Rooms</h1>
+
                             <Button type="button" variant="default" size="sm" onClick={() => append({
                                 roomName: "",
                                 roomType: "",
                                 numRooms: 1,
                                 roomView: "",
-                                roomSizeValue: null,
+                                roomSizeValue: 1,
                                 roomSizeUnit: "sqft",
                                 numBathrooms: 1,
                                 description: "",
@@ -182,7 +199,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                             </Button>
                         </div>
                         {fields.map((field, index) => (
-                            <Card key={field.id} className="border rounded-xl shadow-sm max-w-4xl mx-auto">
+                            <Card className="p-6 w-full max-w-4xl mx-auto border-0 rounded-xl shadow-none bg-white">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <CardTitle className="text-base font-semibold flex items-center gap-2">
                                         Room {index + 1}
@@ -205,12 +222,12 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.roomName`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Room Name</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Deluxe Sea View Room" {...field} />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -220,7 +237,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.roomType`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Room Type</FormLabel>
                                                 <Select
                                                     onValueChange={field.onChange}
@@ -239,7 +256,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage />
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
                                             </FormItem>
                                         )}
                                     />
@@ -249,7 +266,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.roomView`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Room View</FormLabel>
                                                 <Select
                                                     onValueChange={field.onChange}
@@ -268,6 +285,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
+
                                             </FormItem>
                                         )}
                                     />
@@ -277,7 +296,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.roomSizeValue`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Room Size</FormLabel>
                                                 <div className="flex gap-3 items-center">
                                                     <Input
@@ -315,6 +334,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                                         )}
                                                     />
                                                 </div>
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
+
                                             </FormItem>
                                         )}
                                     />
@@ -324,7 +345,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.numRooms`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Number of Rooms</FormLabel>
                                                 <FormControl>
                                                     <Input
@@ -334,6 +355,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                                         onChange={(e) => field.onChange(Number(e.target.value) || 1)}
                                                     />
                                                 </FormControl>
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
+
                                             </FormItem>
                                         )}
                                     />
@@ -343,7 +366,7 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                         control={form.control}
                                         name={`room_detail.${index}.numBathrooms`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="relative">
                                                 <FormLabel>Number of Bathrooms</FormLabel>
                                                 <FormControl>
                                                     <Input
@@ -353,6 +376,8 @@ export default function RoomDetails({ setShareData, shareData, defaultData }: Ro
                                                         onChange={(e) => field.onChange(Number(e.target.value) || 1)}
                                                     />
                                                 </FormControl>
+                                                <FormMessage className="-bottom-5 absolute text-xs" />
+
                                             </FormItem>
                                         )}
                                     />

@@ -33,40 +33,37 @@ export default function PropertyAmenities({
     >({});
     const [loading, setLoading] = useState(false);
     const { setTab } = useAppContext();
+    
+
 
 
 
     // Fetch amenities from API
-     useEffect(() => {
-    (async () => {
-      const res = await fetch("/api/propertyamenities/get");
-      const data = await res.json();
-      const amenities = data?.data || [];
-      setDbAmenities(amenities);
+    useEffect(() => {
+        (async () => {
+            const res = await fetch("/api/propertyamenities/get");
+            const data = await res.json();
+            const amenities = data?.data || [];
+            setDbAmenities(amenities);
 
-      const initial: Record<string, "yes" | "no" | null> = {};
-      amenities.forEach((d: any) => {
-        const existingValue =
-          defaultData?.amenities?.find(
-            (a: any) => a.title === d.title
-          )?.value ??
-          shareData?.property_amenities?.amenities?.find(
-            (a: any) => a.title === d.title
-          )?.value ??
-          null;
+            const initial: Record<string, "yes" | "no" | null> = {};
+            amenities.forEach((d: any) => {
+                const existingValue =
+                    defaultData?.amenities?.find(
+                        (a: any) => a.title === d.title
+                    )?.value ??
+                    shareData?.property_amenities?.amenities?.find(
+                        (a: any) => a.title === d.title
+                    )?.value ??
+                    null;
 
-        initial[d.title] =
-          existingValue === "yes" ? "yes" : existingValue === "no" ? "no" : null;
-      });
+                initial[d.title] =
+                    existingValue === "yes" ? "yes" : existingValue === "no" ? "no" : null;
+            });
 
-      setSelectedAmenities(initial);
-    })();
-  }, [defaultData]);
-
-
-
-
-
+            setSelectedAmenities(initial);
+        })();
+    }, [defaultData]);
 
     // Update selected amenities in parent
     useEffect(() => {
@@ -90,21 +87,17 @@ export default function PropertyAmenities({
 
 
     const handleNext = async () => {
-        setLoading(true);
         setTab('Property Photos')
-        setLoading(false);
     };
-
-
-
     return (
         <div className="flex flex-col w-full">
-          
+
             <Header title="Property Amenities" description="Select which amenities are available in your property." />
 
             {/* Amenity Grid */}
             <div className="flex-1 overflow-y-auto p-6">
-                <div className="w-full max-w-5xl mx-auto grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+                <div className="w-full max-w-7xl mx-auto grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {dbAmenities.map((data) => (
                         <Card
                             key={data._id}

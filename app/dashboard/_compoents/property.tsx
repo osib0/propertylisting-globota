@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,7 @@ import { Loader2, ArrowRight, Save } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
 import Header from "./header";
 
+
 const formSchema = z.object({
   propertyTitle: z.string().min(1, "Property name is required"),
   propertyType: z.string().min(1, "Property type is required"),
@@ -37,20 +38,21 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
 });
 
-export default function PropertyDetails({ setShareData, shareData,defaultData }: any) {
+export default function PropertyDetails({ setShareData, shareData, defaultData }: any) {
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { setTab } = useAppContext()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
-      propertyTitle:"",
-      propertyType: "",
-      email: "",
-      propertyBuildYear: "",
-      bookingSinceYear: "",
-      description: "",
+      propertyTitle: defaultData?.propertyTitle || "",
+      propertyType: defaultData?.propertyType || "",
+      email: defaultData?.email || "",
+      propertyBuildYear: defaultData?.propertyBuildYear || "",
+      bookingSinceYear: defaultData?.bookingSinceYear || "",
+      description: defaultData?.description || "",
     },
   });
 
@@ -68,38 +70,30 @@ export default function PropertyDetails({ setShareData, shareData,defaultData }:
     }
   }, []);
 
- useEffect(() => {
-    if (defaultData) {
-      form.reset({
-        propertyTitle: defaultData.propertyTitle || "",
-        propertyType: defaultData.propertyType || "",
-        email: defaultData.email || "",
-        propertyBuildYear: defaultData.propertyBuildYear || "",
-        bookingSinceYear: defaultData.bookingSinceYear || "",
-        description: defaultData.description || "",
-      });
-    }
-  }, [defaultData, form]);
+useEffect(() => {
+  if (defaultData && !shareData?.property_detail) {
+    form.reset(defaultData);
+  }
+}, [defaultData, shareData, form]);
 
-  useEffect(() => {
-    const subscription = form.watch((values) => {
-      const timeout = setTimeout(() => {
-        setShareData((prev: any) => ({
-          ...prev,
-          property_detail: values,
-        }));
-      }, 400);
+useEffect(() => {
+  const subscription = form.watch((values) => {
+    setShareData((prev: any) => ({
+      ...prev,
+      property_detail: values,
+    }));
+  });
+  return () => subscription.unsubscribe();
+}, [form, setShareData]);
 
-      return () => clearTimeout(timeout);
-    });
-    return () => subscription.unsubscribe();
-  }, [form, setShareData]);
+
+
 
 
   const handleNext = async () => {
     setLoading(true);
     const valid = await form.trigger();
-    if (valid) {   
+    if (valid) {
       setTab('Location')
     }
     setLoading(false);
@@ -107,113 +101,116 @@ export default function PropertyDetails({ setShareData, shareData,defaultData }:
 
   return (
     <div className="flex flex-col w-full">
-     <Header title="Property Details" description="Tell us more about your property before we move to the next step." />
+      <Header status={form.formState.isValid} title="Property Details" description="Tell us more about your property before we move to the next step." />
       <div className="flex-1 overflow-y-auto p-6">
-        <Card className="p-6 w-full max-w-4xl mx-auto shadow-none border">
-          <Form {...form}>
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Property Title */}
-              <FormField
-                control={form.control}
-                name="propertyTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Property Name <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Royal Heritage Desert Camp" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="propertyType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Property Type <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange}  value={field.value}>
-                      <FormControl className="w-full">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select property type..." />
-                        </SelectTrigger>
+        <Card className="p-6 w-full max-w-4xl mx-auto border-0 rounded-xl shadow-none bg-white">
+          <h1 className="text-xl font-normal">Fill Property Details</h1>
+          <Suspense fallback={<h1>Loading</h1>}>
+            <Form {...form}>
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Property Title */}
+                <FormField
+                  control={form.control}
+                  name="propertyTitle"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>
+                        Property Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Royal Heritage Desert Camp" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {propertyTypes.map((type) => (
-                          <SelectItem key={type.type} value={type.type}>
-                            {type.type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="example@gmail.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="propertyBuildYear"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Property Build Year</FormLabel>
-                    <FormControl>
-                      <Input placeholder="2025" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="bookingSinceYear"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Booking Since</FormLabel>
-                    <FormControl>
-                      <Input placeholder="2025" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>
-                      Description <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        rows={4}
-                        placeholder="Enter property description..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="propertyType"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>
+                        Property Type <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || defaultData?.propertyType || ""}>
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select property type..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {propertyTypes.map((type) => (
+                            <SelectItem key={type.type} value={type.type}>
+                              {type.type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="example@gmail.com" {...field} />
+                      </FormControl>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="propertyBuildYear"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>Property Build Year</FormLabel>
+                      <FormControl>
+                        <Input placeholder="2025" {...field} />
+                      </FormControl>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bookingSinceYear"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>Booking Since</FormLabel>
+                      <FormControl>
+                        <Input placeholder="2025" {...field} />
+                      </FormControl>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>
+                        Description <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={4}
+                          placeholder="Enter property description..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="-bottom-5 absolute text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+          </Suspense>
         </Card>
       </div>
       <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">

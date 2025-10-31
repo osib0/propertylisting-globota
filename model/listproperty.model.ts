@@ -86,29 +86,13 @@ const CategoryPhotosSchema = new Schema(
   { _id: false }
 );
 
-const PropertyPhotosSchema = new Schema(
-  {
-    Bar: [CategoryPhotosSchema],
-    Cafe: [CategoryPhotosSchema],
-    "Entrance/Facade": [CategoryPhotosSchema],
-    Events: [CategoryPhotosSchema],
-    Lobby: [CategoryPhotosSchema],
-    Parking: [CategoryPhotosSchema],
-    "Public Area": [CategoryPhotosSchema],
-    Reception: [CategoryPhotosSchema],
-    Restaurant: [CategoryPhotosSchema],
-    "Swimming Pool": [CategoryPhotosSchema],
-    Terrace: [CategoryPhotosSchema],
-  },
-  { _id: false }
-);
 
 
 const ListSchema = new Schema(
   {
     ownerId: {
-      type:String,
-      required:true
+      type: String,
+      required: true
     },
     property_detail: {
       propertyTitle: { type: String, },
@@ -140,19 +124,26 @@ const ListSchema = new Schema(
         }
       ]
     },
-    property_photos: PropertyPhotosSchema,
+    property_photos: [{
+      url: { type: String },
+      file: { type: Schema.Types.Mixed, default: null },
+    }],
 
 
     room_detail: [RoomSchema],
     sleepingArrangement: SleepingArrangementSchema,
-    room_amenities: {
-      amenities: [
-        {
-          title: String,
-          value: { type: String, enum: ["yes", "no", null], default: null },
-        }
-      ]
-    },
+    room_amenities: [
+      {
+        category: { type: String, required: true },
+        amenities: [
+          {
+            title: String,
+            value: { type: String, enum: ["yes", "no", null], default: null },
+          },
+        ],
+      },
+    ],
+
 
     room_photos: [RoomPhotoSchema],
     documents: DocumentsSchema,

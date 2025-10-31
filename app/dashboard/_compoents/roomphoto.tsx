@@ -2,20 +2,53 @@
 
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Images, Loader2, Trash2, Star, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Loader2,
+  Trash2,
+  Star,
+  ArrowRight,
+  ImageIcon,
+  Images,
+} from "lucide-react";
+
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
 import { useAppContext } from "@/app/contextapi";
 import Header from "./header";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type RoomPhoto = {
-  category: string;
-  photos: { fileName: string; url: string; uploading?: boolean }[];
-  coverPhotoIndex: number;
-};
+// --------------------
+// Schema
+// --------------------
+const RoomPhotoSchema = z.object({
+  category: z.string(),
+  photos: z
+    .array(
+      z.object({
+        fileName: z.string(),
+        url: z.string().url(),
+      })
+    )
+    .min(2, "At least 2 photos required for this room."),
+  coverPhotoIndex: z.number(),
+});
 
+const RoomPhotosSchema = z.object({
+  room_photos: z.array(RoomPhotoSchema),
+});
+
+type RoomPhotosType = z.infer<typeof RoomPhotosSchema>;
+
+// --------------------
+// Dropzone
+// --------------------
 function Dropzone({
   onFiles,
   multiple = true,
@@ -35,103 +68,118 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`border border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer transition-all
-      ${isDragActive ? "border-primary bg-primary/5" : "hover:border-primary/40 hover:bg-muted/30"}`}
+      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+        ${isDragActive
+          ? "border-primary bg-primary/10 shadow-md scale-[1.01]"
+          : "border-muted bg-muted/5 hover:bg-muted/10 hover:border-primary/60"
+        }`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10">
-          <Images className="w-6 h-6 text-primary" />
+      <div className="flex flex-col items-center justify-center space-y-3">
+        <div
+          className={`w-14 h-14 rounded-full flex items-center justify-center 
+            ${isDragActive ? "bg-primary text-white" : "bg-muted text-primary"}`}
+        >
+          <ImageIcon className="w-7 h-7" />
         </div>
-        <p className="text-sm text-muted-foreground">
-          <strong>Drag & drop</strong> images here or{" "}
-          <button
-            type="button"
-            onClick={open}
-            className="text-primary font-medium underline-offset-2 hover:underline"
-          >
-            browse
-          </button>
-        </p>
-        {note && <p className="text-xs text-muted-foreground italic">{note}</p>}
+
+        <div>
+          <p className="text-sm text-muted-foreground">
+            <strong>Drag & drop</strong> images here
+          </p>
+          <p className="text-sm text-muted-foreground">
+            or{" "}
+            <button
+              type="button"
+              onClick={open}
+              className="text-primary font-medium underline-offset-4 hover:underline"
+            >
+              browse files
+            </button>
+          </p>
+        </div>
+
+        {note && (
+          <p className="text-xs text-muted-foreground mt-2">{note}</p>
+        )}
       </div>
     </div>
   );
 }
 
-interface RoomPhotosProps {
-  setShareData: (value: any) => void;
-  shareData: any;
-  defaultData?: any;
-}
-
-const RoomPhotos: React.FC<RoomPhotosProps> = ({
-  setShareData,
-  shareData,
-  defaultData,
-}) => {
-  const [roomPhotos, setRoomPhotos] = useState<RoomPhoto[]>([]);
+// --------------------
+// Main Component
+// --------------------
+export default function RoomPhotos({ setShareData, shareData, defaultData }: any) {
+  const { setTab } = useAppContext();
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setTab } = useAppContext();
 
+  const form = useForm<RoomPhotosType>({
+    resolver: zodResolver(RoomPhotosSchema),
+    mode: "onChange",
+    defaultValues: { room_photos: [] },
+  });
+
+  const { watch, setValue, formState } = form;
+  const roomPhotos = watch("room_photos");
+
+  // Load data from shared or default
   useEffect(() => {
     if (shareData?.room_detail?.length) {
-      const initialPhotos = shareData.room_detail.map((room: any) => {
-        const existing =
-          shareData.room_photos?.find((r: any) => r.category === room.roomName) ||
-          defaultData?.find((r: any) => r.category === room.roomName);
+      setLoading(true);
+      setTimeout(() => {
+        const initial = shareData.room_detail.map((room: any) => {
+          const existing =
+            shareData.room_photos?.find((r: any) => r.category === room.roomName) ||
+            defaultData?.find((r: any) => r.category === room.roomName);
 
-        return (
-          existing || {
-            category: room.roomName,
-            photos: [],
-            coverPhotoIndex: 0,
-          }
-        );
-      });
-      setRoomPhotos(initialPhotos);
+          return (
+            existing || {
+              category: room.roomName,
+              photos: [],
+              coverPhotoIndex: 0,
+            }
+          );
+        });
+        setValue("room_photos", initial);
+        setLoading(false);
+      }, 500);
     }
-  }, [shareData, defaultData]);
+  }, []);
 
+  // Sync parent
   useEffect(() => {
-    if (
-      JSON.stringify(shareData?.room_photos) !== JSON.stringify(roomPhotos)
-    ) {
-      setShareData((prev: any) => ({
-        ...prev,
-        room_photos: roomPhotos,
-      }));
-    }
+    setShareData((prev: any) => ({
+      ...prev,
+      room_photos: roomPhotos,
+    }));
   }, [roomPhotos]);
 
-  const handlePhotoUpload = async (category: string, files: File[]) => {
-    if (!files.length) return;
+  const handleUpload = async (category: string, files: File[]) => {
     setUploading(true);
 
-    for (const file of files) {
-      const tempUrl = URL.createObjectURL(file);
+    // 1️⃣ Local preview dikhao
+    const tempPhotos = files.map((file) => ({
+      fileName: file.name,
+      url: URL.createObjectURL(file),
+    }));
 
-      // temporary preview
-      setRoomPhotos((prev) =>
-        prev.map((room) =>
-          room.category === category
-            ? {
-                ...room,
-                photos: [
-                  ...room.photos,
-                  { fileName: file.name, url: tempUrl, uploading: true },
-                ],
-              }
-            : room
-        )
-      );
+    // Pehle temp photos add karo
+    const updatedRooms = roomPhotos.map((room) =>
+      room.category === category
+        ? { ...room, photos: [...room.photos, ...tempPhotos] }
+        : room
+    );
+    setValue("room_photos", updatedRooms);
+
+    // 2️⃣ Upload to AWS aur replace karo
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", `room_photos/${category}`);
 
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", `room_photos/${category}`);
-
         const res = await fetch("/api/photos/upload", {
           method: "POST",
           body: formData,
@@ -139,45 +187,44 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
         const data = await res.json();
 
         if (data.url) {
-          setRoomPhotos((prev) =>
-            prev.map((room) =>
-              room.category === category
-                ? {
-                    ...room,
-                    photos: room.photos.map((p) =>
-                      p.fileName === file.name
-                        ? { ...p, url: data.url, uploading: false }
-                        : p
-                    ),
-                  }
-                : room
-            )
+          // Replace only the uploaded photo
+          const newRooms = form.getValues("room_photos").map((room) =>
+            room.category === category
+              ? {
+                ...room,
+                photos: room.photos.map((p) =>
+                  p.fileName === file.name ? { ...p, url: data.url } : p
+                ),
+              }
+              : room
           );
+          setValue("room_photos", newRooms);
         }
-      } catch (error) {
-        console.error("Upload failed", error);
+      } catch (err) {
+        console.error("Upload failed:", err);
       }
     }
 
     setUploading(false);
   };
 
+
+
   const removePhoto = (category: string, index: number) => {
-    setRoomPhotos((prev) =>
-      prev.map((room) =>
+    setValue(
+      "room_photos",
+      roomPhotos.map((room) =>
         room.category === category
-          ? {
-              ...room,
-              photos: room.photos.filter((_, i) => i !== index),
-            }
+          ? { ...room, photos: room.photos.filter((_, i) => i !== index) }
           : room
       )
     );
   };
 
   const setCoverPhoto = (category: string, index: number) => {
-    setRoomPhotos((prev) =>
-      prev.map((room) =>
+    setValue(
+      "room_photos",
+      roomPhotos.map((room) =>
         room.category === category
           ? { ...room, coverPhotoIndex: index }
           : room
@@ -185,108 +232,156 @@ const RoomPhotos: React.FC<RoomPhotosProps> = ({
     );
   };
 
-  const handleNext = () => setTab("Documents");
+  const handleNext = async () => {
+    const valid = await form.trigger();
+    if (valid) setTab("Documents");
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 w-full">
-      {/* Header */}
-      <Header title="Room Photos" description="Upload and manage photos for each room category." />
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        {roomPhotos.map((room) => (
-          <Card key={room.category} className="shadow-none border-gray-200">
-            <CardContent className="p-6 space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Images className="w-5 h-5 text-primary" />
-                  <h3 className="font-medium text-lg capitalize">
-                    {room.category}
-                  </h3>
-                </div>
-                <Badge variant="outline">
-                  {room.photos.length} Photo
-                  {room.photos.length !== 1 && "s"}
-                </Badge>
-              </div>
+    <div className="flex flex-col min-h-screen w-full bg-muted/30">
+      <Header
+        status={formState.isValid}
+        title="Room Photos"
+        description="Upload and manage photos for each room category."
+      />
+      <Form {...form}>
+        <form className="flex flex-col flex-1">
 
-              <Dropzone
-                onFiles={(files) => handlePhotoUpload(room.category, files)}
-                note="Upload JPG, PNG, or WebP up to 5MB."
-              />
+          <div className="p-6 flex-1 overflow-y-auto space-y-6 max-w-7xl mx-auto bg-white w-full">
+            <h1 className="text-2xl font-semibold flex items-center gap-2">
+              Upload Room Photos
+              {shareData?.room_detail?.length ? (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  ({shareData.room_detail.length} {shareData.room_detail.length > 1 ? "Rooms" : "Room"})
+                </span>
+              ) : null}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Add photos for every room category to showcase its look and design.
+            </p>
 
-              {room.photos.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {room.photos.map((photo, i) => (
-                    <div
-                      key={i}
-                      className="relative rounded-lg overflow-hidden border border-gray-200 group"
-                    >
-                      <Image
-                        src={photo.url}
-                        alt={photo.fileName}
-                        width={500}
-                        height={300}
-                        className="object-cover w-full h-40 transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {photo.uploading && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <Loader2 className="animate-spin text-white w-6 h-6" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 p-3">
-                        <Button
-                          size="sm"
-                          variant={
-                            room.coverPhotoIndex === i ? "default" : "secondary"
-                          }
-                          onClick={() => setCoverPhoto(room.category, i)}
-                          className="w-full text-xs"
-                        >
-                          {room.coverPhotoIndex === i ? (
-                            <>
-                              <Star className="w-3 h-3 mr-1" /> Cover
-                            </>
-                          ) : (
-                            "Set Cover"
+            {loading ? (
+              <SkeletonGrid />
+            ) : (
+              roomPhotos.map((room, idx) => (
+                <FormField
+                  key={idx}
+                  control={form.control}
+                  name={`room_photos.${idx}`}
+                  render={() => (
+                    <FormItem>
+                      <Card className="border shadow-sm rounded-xl">
+                        <div className="p-6 space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-lg capitalize flex items-center gap-2">
+                              <Images className="w-5 h-5 text-primary" /> {room.category}
+                            </h3>
+                            <Badge variant="outline">
+                              {room.photos.length} Photo{room.photos.length !== 1 && "s"}
+                            </Badge>
+                          </div>
+
+                          <Dropzone
+                            onFiles={(files) => handleUpload(room.category, files)}
+                            note="Upload JPG, PNG, or WebP up to 5MB."
+                          />
+
+                          {formState.errors.room_photos?.[idx]?.photos && (
+                            <Alert variant="destructive">
+                              <AlertDescription>
+                                {formState.errors.room_photos[idx].photos?.message as string}
+                              </AlertDescription>
+                            </Alert>
                           )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => removePhoto(room.category, i)}
-                          className="w-full text-xs"
-                        >
-                          <Trash2 className="w-3 h-3 mr-1" /> Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {/* Footer */}
-      <div className="border-t bg-white p-4 sticky bottom-0 flex justify-end gap-3">
-        <Button variant="outline" onClick={() => setTab("Room Amenities")}>
-          Back
-        </Button>
-        <Button onClick={handleNext} disabled={uploading || loading}>
-          {uploading ? (
-            <>
-              <Loader2 className="animate-spin w-4 h-4 mr-2" /> Uploading...
-            </>
-          ) : (
-            <>
-              Next Step <ArrowRight className="w-4 h-4 ml-1" />
-            </>
-          )}
-        </Button>
-      </div>
+                          {/* Photo grid */}
+                          {room.photos.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                              {room.photos.map((photo, i) => (
+                                <Card
+                                  key={i}
+                                  className="relative overflow-hidden group rounded-xl border p-0 shadow-sm"
+                                >
+                                  <Image
+                                    src={photo.url}
+                                    alt={photo.fileName}
+                                    width={400}
+                                    height={400}
+                                    className="object-cover w-full h-48 sm:h-56 rounded-xl transition-all duration-300 group-hover:scale-105"
+                                  />
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2 p-2">
+                                    <Button
+                                      size="sm"
+                                      variant={room.coverPhotoIndex === i ? "default" : "secondary"}
+                                      onClick={() => setCoverPhoto(room.category, i)}
+                                      className="w-full text-xs"
+                                    >
+                                      {room.coverPhotoIndex === i ? (
+                                        <>
+                                          <Star className="w-3 h-3 mr-1" /> Cover
+                                        </>
+                                      ) : (
+                                        "Set Cover"
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => removePhoto(room.category, i)}
+                                      className="w-full text-xs"
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-1" /> Remove
+                                    </Button>
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    </FormItem>
+                  )}
+                />
+              ))
+            )}
+          </div>
+
+          <div className="border-t bg-white p-4 sticky bottom-0 z-30 flex justify-end items-center gap-2">
+            <Button variant="outline" onClick={() => setTab("Room Amenities")}>
+              Back
+            </Button>
+            <Button
+              type="button"
+              disabled={uploading}
+              onClick={handleNext}
+              className="flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="animate-spin w-4 h-4" /> Uploading...
+                </>
+              ) : (
+                <>
+                  Next Step <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
-};
+}
 
-export default RoomPhotos;
+// --------------------
+// Skeleton Grid
+// --------------------
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 my-6">
+      {[...Array(6)].map((_, i) => (
+        <Skeleton key={i} className="w-full h-48 sm:h-56 rounded-xl" />
+      ))}
+    </div>
+  );
+}
