@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSession } from "next-auth/react";
-import { Loader2, Edit3, Save, X } from "lucide-react";
+import { Edit3, Save, X } from "lucide-react";
 import Header from "@/components/header";
+import { useAppContext } from "@/app/contextapi";
 
 interface InputField {
   label: string;
@@ -53,30 +53,14 @@ const BasicInfo = () => {
   const [loading, setLoading] = useState(true);
   const [localities, setLocalities] = useState<{ _id: string; title: string }[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<{ id: string; type: string }[]>([]);
-  const [propertyId, setPropertyId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
     property_status: "1",
     listing_status: "2",
     booking_status: "1",
   });
 
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { propertyId, userId, setPropertyTile } = useAppContext()
 
-  useEffect(() => {
-    if (!userId) return;
-    async function fetchUserData() {
-      try {
-        const res = await fetch(`/api/user/get?id=${userId}`);
-        const result = await res.json();
-        if (result.status) setPropertyId(result.data.propertyId);
-        else toast.error("Failed to fetch user details");
-      } catch {
-        toast.error("Error fetching user data");
-      }
-    }
-    fetchUserData();
-  }, [userId]);
 
   useEffect(() => {
     async function fetchPropertyTypes() {
@@ -111,6 +95,7 @@ const BasicInfo = () => {
             booking_status: result.data.booking_status || "1",
             locality: result.data.locality || "",
           });
+          setPropertyTile(result?.data?.property_name)
         }
       } catch {
         toast.error("Failed to fetch property");
@@ -121,56 +106,56 @@ const BasicInfo = () => {
     fetchProperty();
   }, [propertyId]);
 
-//   useEffect(() => {
-//   if (!propertyId) return;
+  //   useEffect(() => {
+  //   if (!propertyId) return;
 
-//   async function fetchProperty() {
-//     try {
-//       setLoading(true);
+  //   async function fetchProperty() {
+  //     try {
+  //       setLoading(true);
 
-//       const historyRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
-//       const historyData = await historyRes.json();
+  //       const historyRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
+  //       const historyData = await historyRes.json();
 
-//       console.log("History data:", historyData); 
+  //       console.log("History data:", historyData); 
 
-//       if (historyData.status && historyData.data) {
-//         toast("Pending approval changes loaded");
-//         setUser(historyData.data.newData || []);
-//         setFormData({
-//           ...historyData.data.newData,
-//           property_status: historyData.data.newData.property_status || "1",
-//           listing_status: historyData.data.newData.listing_status || "2",
-//           booking_status: historyData.data.newData.booking_status || "1",
-//           locality: historyData.data.newData.locality || "",
-//         });
-//       } else {
-//         console.log("Fetching main property...");
-//         const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
-//         const result = await res.json();
-//         console.log("Property data:", result); 
-//         if (result.status) {
-//           setUser(result.data || []);
-//           setFormData({
-//             ...result.data,
-//             property_status: result.data.property_status || "1",
-//             listing_status: result.data.listing_status || "2",
-//             booking_status: result.data.booking_status || "1",
-//             locality: result.data.locality || "",
-//           });
-//         } else {
-//           toast.error("Failed to fetch property");
-//         }
-//       }
-//     } catch (error) {
-//       console.error("Error fetching property:", error);
-//       toast.error("Error fetching property data");
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
+  //       if (historyData.status && historyData.data) {
+  //         toast("Pending approval changes loaded");
+  //         setUser(historyData.data.newData || []);
+  //         setFormData({
+  //           ...historyData.data.newData,
+  //           property_status: historyData.data.newData.property_status || "1",
+  //           listing_status: historyData.data.newData.listing_status || "2",
+  //           booking_status: historyData.data.newData.booking_status || "1",
+  //           locality: historyData.data.newData.locality || "",
+  //         });
+  //       } else {
+  //         console.log("Fetching main property...");
+  //         const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
+  //         const result = await res.json();
+  //         console.log("Property data:", result); 
+  //         if (result.status) {
+  //           setUser(result.data || []);
+  //           setFormData({
+  //             ...result.data,
+  //             property_status: result.data.property_status || "1",
+  //             listing_status: result.data.listing_status || "2",
+  //             booking_status: result.data.booking_status || "1",
+  //             locality: result.data.locality || "",
+  //           });
+  //         } else {
+  //           toast.error("Failed to fetch property");
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching property:", error);
+  //       toast.error("Error fetching property data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
 
-//   fetchProperty();
-// }, [propertyId]);
+  //   fetchProperty();
+  // }, [propertyId]);
 
   useEffect(() => {
     async function fetchLocalities() {
@@ -188,6 +173,7 @@ const BasicInfo = () => {
     }
     fetchLocalities();
   }, []);
+
 
   const handleChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
@@ -232,7 +218,7 @@ const BasicInfo = () => {
         if (formData.hasOwnProperty(key)) filteredPayload[key] = formData[key];
       });
 
-      const res = await fetch(`/api/history/add`, {
+      const res = await fetch(`/api/history/info/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -256,7 +242,7 @@ const BasicInfo = () => {
 
   return (
     <>
-      <Header title={formData?.property_name} propertyId={formData?.property_id} />
+
       <div className="max-w-7xl w-full mx-auto bg-white p-6">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Basic Info</h2>

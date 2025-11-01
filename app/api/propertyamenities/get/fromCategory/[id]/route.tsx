@@ -1,0 +1,14 @@
+import dbConnect from "@/lib/db";
+import propertytypeModel from "@/model/propertyamenities.model";
+import { NextResponse } from "next/server";
+
+export async function GET(req: Request, { params }: any) {
+  const { id } = params;
+  try {
+    await dbConnect();
+const amenities = await propertytypeModel.find({ categoryId  : id });
+    return NextResponse.json({ success: true, data: amenities });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message });
+  }
+}
