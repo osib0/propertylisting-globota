@@ -1,17 +1,13 @@
 "use client";
 
-import React, {
+import {
     useEffect,
-    useRef,
     useState,
     useCallback,
-    forwardRef,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,8 +16,6 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CalendarDays, Chev
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "react-hot-toast";
-import { DateRange } from "react-day-picker";
-import { CalendarIcon as CalendarIconComponent } from "lucide-react";
 import CalendarViewModal from "./calendorview";
 import RestrictionUpdate from "./restrictionupdate";
 import BulkUpdate from "./bulkupdate";
@@ -47,13 +41,13 @@ interface DateItem {
     day: string;
     date: number;
     month: string;
-    fullDate: string; // YYYY-MM-DD
+    fullDate: string; 
 }
 
 interface InventoryItem {
     _id: string;
     room_id: string;
-    date: string; // ISO date (YYYY-MM-DD...)
+    date: string; 
     available_rooms: number;
     status: "block" | "unblock";
     property_id: string;

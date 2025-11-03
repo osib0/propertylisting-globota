@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const InventorySkeleton = () => {
   return (
-    <div className="p-4 md:p-8 space-y-6 min-h-screen bg-background">
+    <div className="p-4 md:p-8 space-y-6 min-h-screen bg-background mx-auto max-w-7xl">
       <div className="space-y-2">
         <Skeleton className="h-5 w-40" />
         <Skeleton className="h-4 w-20" />
