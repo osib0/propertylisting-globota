@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { Check, Star, Loader2 } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
 
@@ -44,8 +44,8 @@ const Amenities = () => {
         const res = await fetch(`/api/propertyamenitiestype/get`);
         if (!res.ok) throw new Error("Failed to fetch categories");
         const json = await res.json();
-        console.log(json,'json');
-        
+        console.log(json, 'json');
+
         return json.data as Category[];
     };
 
@@ -53,6 +53,8 @@ const Amenities = () => {
         const res = await fetch(`/api/propertyamenities/fromCategory/${categoryId}`);
         if (!res.ok) throw new Error("Failed to fetch amenities");
         const json = await res.json();
+            console.log(json,'json');
+
         setAmenities(json?.data || []);
     };
 
@@ -61,6 +63,7 @@ const Amenities = () => {
             const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
             if (!res.ok) throw new Error("Failed to fetch saved amenities");
             const json = await res.json();
+            
             const normalized = (json?.data?.property_amenities || []).map((cat: any) => ({
                 category_id: cat.category_id,
                 item: (cat.item || []).map((a: any) => ({ id: a.id || a._id, featured: !!a.featured })),

@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Edit3, Save, X } from "lucide-react";
-import Header from "@/components/header";
 import { useAppContext } from "@/app/contextapi";
 
 interface InputField {
@@ -38,11 +37,11 @@ const inputs: InputField[] = [
   { label: "Phone", key: "phone" },
   { label: "Landline Number", key: "landline_number" },
   { label: "Property Status", key: "property_status" },
-  { label: "Listing Status", key: "listing_status" },
+  // { label: "Listing Status", key: "listing_status" },
   { label: "Star Rating", key: "star_rating" },
   { label: "Property Build", key: "property_build" },
   { label: "Accepting Booking Since", key: "accepting_booking_since", type: "date" },
-  { label: "Booking Status", key: "booking_status" },
+  // { label: "Booking Status", key: "booking_status" },
   { label: "Locality", key: "locality" },
   { label: "Description", key: "description" },
 ];
@@ -56,7 +55,6 @@ const BasicInfo = () => {
   const [formData, setFormData] = useState<any>({
     property_status: "1",
     listing_status: "2",
-    booking_status: "1",
   });
 
   const { propertyId, userId, setPropertyTile } = useAppContext()
@@ -81,6 +79,20 @@ const BasicInfo = () => {
 
   useEffect(() => {
     if (!propertyId) return;
+
+    // (async function () {
+    //  try {
+    //    const historyRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
+    //   const result = await historyRes.json();
+    //   console.log(result);
+      
+    //  } catch (error) {
+    //   console.log(error);
+      
+    //  }
+
+
+    // })()
     async function fetchProperty() {
       try {
         setLoading(true);

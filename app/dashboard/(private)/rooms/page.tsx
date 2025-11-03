@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import RoomAdd from "./roomactions/RoomAdd";
-// import RoomCategoryEdit from "../roomedit/RoomCategoryEdit";
-// import AddRateplanForm from "../rateplan/rateplanadd/RatePlans";
-// import EditRateplans from "../rateplan/rateplanedit/EditRateplans";
 import { useAppContext } from "@/app/contextapi";
 import RoomTableList from "./_components/roomlist";
+import AddRateplanForm from "./_components/addrateplan";
+import EditRateplans from "./_components/editrateplan";
+import RoomAdd from "./_components/addroom";
 
 
 
@@ -69,28 +68,28 @@ const Page = () => {
             )}
 
             {/* ---------- ADD RATEPLAN ---------- */}
-            {/* {isAddRateplan && (
-        <AddRateplanForm
-          roomId={rateplanRoomId}
-          onBack={() => setAddRateplan(false)}
-        />
-      )} */}
+            {isAddRateplan && (
+                <AddRateplanForm
+                    roomId={rateplanRoomId}
+                    onBack={() => setAddRateplan(false)}
+                />
+            )}
 
             {/* ---------- EDIT RATEPLAN ---------- */}
-            {/* {isEditRateplan && (
-        <EditRateplans
-          roomId={editRateplanRoomId}
-          onBack={() => setEditRateplan(false)}
-        />
-      )} */}
+            {isEditRateplan && (
+                <EditRateplans
+                    roomId={editRateplanRoomId}
+                    onBack={() => setEditRateplan(false)}
+                />
+            )}
 
             {/* ---------- ADD ROOM ---------- */}
-            {/* {isAddRoom && (
-        <RoomAdd
-          setAddRoom={setAddRoom}
-          propertyId={propertyId}
-        />
-      )} */}
+            {isAddRoom && (
+                <RoomAdd
+                    setAddRoom={setAddRoom}
+                    propertyId={propertyId}
+                />
+            )}
 
             {/* ---------- EDIT ROOM ---------- */}
             {/* {isEdit && (

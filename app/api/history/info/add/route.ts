@@ -12,6 +12,7 @@ export async function POST(req: Request) {
     if (!existing) {
       return NextResponse.json({ status: false, message: "Property not found" });
     }
+
     const changes: any[] = [];
     Object.keys(newData).forEach((key) => {
       const oldValue = existing[key];
@@ -25,17 +26,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: false, message: "No changes detected" });
     }
 
-    // Save to property history
-    const history = await historyModel.create({
+    const existingHistory = await historyModel.findOne({
       propertyId,
       userId,
-      changes,
       status: "pending",
     });
 
+    let history;
+
+    if (existingHistory) {
+      existingHistory.changes = changes;
+      existingHistory.updatedAt = new Date();
+      history = await existingHistory.save();
+    } else {
+      history = await historyModel.create({
+        propertyId,
+        userId,
+        changes,
+        status: "pending",
+      });
+    }
+
     return NextResponse.json({
       status: true,
-      message: "Changes submitted for approval",
+      message: existingHistory
+        ? "Changes updated in pending record"
+        : "Changes submitted for approval",
       data: history,
     });
   } catch (err) {

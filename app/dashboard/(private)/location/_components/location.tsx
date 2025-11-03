@@ -68,6 +68,8 @@ const Location = () => {
         const res = await fetch(`/api/property/edit/location/${propertyId}`);
         if (res.ok) {
           const data = await res.json();
+          console.log('location data', data);
+
           const lat = typeof data.lat === "number" ? data.lat : parseFloat(data.lat) || defaultCenter.lat;
           const lng = typeof data.lng === "number" ? data.lng : parseFloat(data.lng) || defaultCenter.lng;
           if (isNaN(lat) || isNaN(lng)) throw new Error("Invalid coordinates");
@@ -175,6 +177,7 @@ const Location = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address, pincode, city, landmark, lat: coordinates.lat, lng: coordinates.lng }),
       });
+
 
       if (res.ok) {
         // use any toast system you prefer; keeping it minimal here
