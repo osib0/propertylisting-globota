@@ -11,7 +11,6 @@ import RoomAmenities from './roomamenities';
 import RoomPhotos from './roomphoto';
 import Documents from './document';
 import OwnerDetails from './owenerdetail';
-import ManageInventory from './inventory';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
@@ -36,7 +35,6 @@ const Alltabs = () => {
             {isTab == 'Room Photos' && (<RoomPhotos defaultData={isListingData?.room_photos} setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Documents' && (<Documents  defaultData={isListingData?.documents} setShareData={setShareData} shareData={shareData} />)}
             {isTab == 'Owner Details' && (<OwnerDetails defaultData={isListingData?.owner_details} setShareData={setShareData} shareData={shareData} />)}
-            {isTab == 'Inventory' && (<ManageInventory propertyId={session?.user?.id} />)}
         </>
     )
 }

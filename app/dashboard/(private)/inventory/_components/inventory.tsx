@@ -1,4 +1,3 @@
-// components/propertymanagement/property/manageinventory/ManageInventory.tsx
 "use client";
 
 import React, {
@@ -28,6 +27,7 @@ import RestrictionUpdate from "./restrictionupdate";
 import BulkUpdate from "./bulkupdate";
 import InventorySkeleton from "./skeliton";
 import RateModel from "./ratemodel";
+import { useAppContext } from "@/app/contextapi";
 
 type Tab = "B2C" | "B2B";
 type BulkPanel = false | "inventory" | "rates" | "restriction";
@@ -77,7 +77,7 @@ interface RateItem {
 
 const tabs: Tab[] = ["B2C", "B2B"];
 
-const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => {
+const ManageInventory = () => {
     const [activeTab, setActiveTab] = useState<Tab>("B2C");
     const [dates, setDates] = useState<DateItem[]>([]);
     const [roomState, setRoomState] = useState<Room[]>([]);
@@ -111,6 +111,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
     const [bootLoading, setBootLoading] = useState(true);
     const [showCalendar, setShowCalendar] = useState(false);
 
+    const { propertyId } = useAppContext()
     const currentType: "b2c" | "b2b" = activeTab === "B2C" ? "b2c" : "b2b";
 
     const generateDates = useCallback((baseDate: Date): DateItem[] => {
@@ -517,7 +518,7 @@ const ManageInventory = ({ propertyId }: { propertyId: string | undefined }) => 
     })();
 
     return (
-        <div className="p-6 md:p-8 w-full max-w-7xl space-y-6 min-h-screen bg-background">
+        <div className="p-6 md:p-8 w-full max-w-7xl mx-auto space-y-6 min-h-screen bg-background">
             {!bulkUpdate ? (
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">

@@ -42,7 +42,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-// 🔹 Menu item list (just names + href)
 const menuItems = [
   { label: "Basic Info", href: "/dashboard/basic-info" },
   { label: "Location", href: "/dashboard/location" },
@@ -50,11 +49,9 @@ const menuItems = [
   { label: "Property Photos", href: "/dashboard/property-photos" },
   { label: "Rooms", href: "/dashboard/rooms" },
   { label: "Room Photos", href: "/dashboard/room-photos" },
-  { label: "Room Amenities", href: "/dashboard/room-amenities" },
   { label: "Inventory", href: "/dashboard/inventory" },
 ];
 
-// 🔹 Icon mapping function
 const getIcon = (label: string) => {
   const map: Record<string, any> = {
     "Basic Info": Home,
@@ -63,7 +60,6 @@ const getIcon = (label: string) => {
     "Property Photos": ImageIcon,
     Rooms: ListFilter,
     "Room Photos": Bed,
-    "Room Amenities": CupSoda,
     Inventory: User,
   };
   return map[label] || Home;

@@ -1,4 +1,3 @@
-// components/propertymanagement/property/manageinventory/model/RateModel.tsx
 "use client";
 
 import React, { Dispatch, SetStateAction, useState } from "react";
