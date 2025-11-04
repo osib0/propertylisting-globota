@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import { NextResponse } from 'next/server';
 
 
-// POST: Save or update property_amenities
 export async function POST(req: Request, { params }: any) {
 
 

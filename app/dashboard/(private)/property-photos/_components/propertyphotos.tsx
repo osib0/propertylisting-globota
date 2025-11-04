@@ -123,7 +123,7 @@ const PropertyPhotos = () => {
     const fetchPhotos = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/propertyphotos/get/${propertyId}`, { cache: "no-store" });
+            const res = await fetch(`/api/propertyphotos/get?propertyId=${propertyId}`, { cache: "no-store" });
             const data = await res.json();
             const list: Photo[] = Array.isArray(data?.data) ? data.data : [];
             list.sort((a, b) => a.photo_sort_id - b.photo_sort_id);

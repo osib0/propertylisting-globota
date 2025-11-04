@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppContext } from "@/app/contextapi";
 import LocationAdd from "./addlocation";
+import toast from "react-hot-toast";
 // import LocationAdd from "./locationadd/LocationAdd";
 
 // Types
@@ -39,7 +40,9 @@ const defaultCenter: Coordinates = {
 const Location = () => {
   const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || "";
 
-  const { propertyId } = useAppContext()
+  const { propertyId, userId } = useAppContext();
+
+  console.log('useAppContext', propertyId);
 
   const [coordinates, setCoordinates] = useState<Coordinates>(defaultCenter);
   const [address, setAddress] = useState<string>("");
@@ -166,34 +169,84 @@ const Location = () => {
     }
   }, [googleMapsApiKey]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isMounted.current) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/property/edit/location/${propertyId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, pincode, city, landmark, lat: coordinates.lat, lng: coordinates.lng }),
-      });
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!isMounted.current) return;
+  //   setLoading(true);
+  //   setError(null);
+
+  //   try {
+  //     const res = await fetch(`/api/property/edit/location/${propertyId}`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         address,
+  //         pincode,
+  //         city,
+  //         landmark,
+  //         lat: coordinates.lat,
+  //         lng: coordinates.lng,
+  //       }),
+  //     });
+
+  //     const data = await res.json(); 
+  //     console.log(data,'data');
 
 
-      if (res.ok) {
-        // use any toast system you prefer; keeping it minimal here
-        // you can wire react-hot-toast or shadcn's toast hook
-        console.info("Location saved");
-      } else {
-        const data: ApiErrorResponse = await res.json();
-        setError(data.error || "Failed to save location");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to save location");
-    } finally {
-      setLoading(false);
+  //     if (res.ok) {
+  //       console.info("Location saved", data);
+  //     } else {
+  //       setError(data.error || "Failed to save location");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError("Failed to save location");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!isMounted.current) return;
+  setLoading(true);
+  setError(null);
+
+  try {
+    const res = await fetch(`/api/history/location/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        propertyId,
+        userId,
+        newLocation: {
+          address,
+          pincode,
+          city,
+          landmark,
+          lat: coordinates.lat,
+          lng: coordinates.lng,
+        },
+      }),
+    });
+
+    const json = await res.json();
+    console.log("location history response", json);
+
+    if (json.status) {
+      toast.success(
+        json.message || "Location changes submitted for approval"
+      );
+    } else {
+      toast.error(json.message || "Failed to submit location changes");
     }
-  };
+  } catch (err) {
+    console.error("handleSubmit error", err);
+    toast.error("Failed to submit location changes");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const renderLatitude = () => (typeof coordinates.lat === "number" ? coordinates.lat.toFixed(6) : "0.000000");
   const renderLongitude = () => (typeof coordinates.lng === "number" ? coordinates.lng.toFixed(6) : "0.000000");
@@ -294,10 +347,8 @@ const Location = () => {
           </CardContent>
         </Card>
       </div>
-
       <hr />
-
-      <LocationAdd propertyId={propertyId} />
+      <LocationAdd propertyId={propertyId} userId={userId} />
     </div>
   );
 };

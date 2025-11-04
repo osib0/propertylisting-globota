@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+[data-slot="sidebar-container"]{
+  border: 0;
+}

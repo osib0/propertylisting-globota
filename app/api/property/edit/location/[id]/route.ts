@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/db";
 import propertyModel from "@/model/property.model";
+import mongoose from "mongoose";
 import { NextResponse } from 'next/server';
 
 // GET: Fetch the latest location
@@ -22,10 +23,8 @@ export async function GET(req: Request, { params }: any) {
 export async function POST(req: Request, { params }: any) {
 
 
-  const { id } = params
-
   try {
-
+    const { id } = params
     const body = await req.json();
 
 
@@ -37,6 +36,7 @@ export async function POST(req: Request, { params }: any) {
     }
 
     await dbConnect();
+
     const update = {
       address: address,
       pincode: pincode,
@@ -46,9 +46,7 @@ export async function POST(req: Request, { params }: any) {
       lng: lng
     };
 
-    const existingLocation = await propertyModel.findByIdAndUpdate({ _id: id }, update);
-
-
+    const existingLocation = await propertyModel.findByIdAndUpdate(id, update, { new: true });
 
     return NextResponse.json(existingLocation, { status: 200 });
 

@@ -7,10 +7,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-hot-toast";
 import { Check, Star, Loader2 } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import Image from "next/image";
 
 interface AmenityItem {
     _id: string;
     title: string;
+    photo: string
 }
 
 interface Category {
@@ -38,7 +43,7 @@ const Amenities = () => {
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [saving, setSaving] = useState<boolean>(false);
 
-    const { propertyId } = useAppContext()
+    const { propertyId ,userId} = useAppContext()
 
     const fetchCategories = async () => {
         const res = await fetch(`/api/propertyamenitiestype/get`);
@@ -50,10 +55,12 @@ const Amenities = () => {
     };
 
     const fetchAmenities = async (categoryId: string) => {
-        const res = await fetch(`/api/propertyamenities/fromCategory/${categoryId}`);
+        console.log(categoryId, 'categoryid');
+
+        const res = await fetch(`/api/propertyamenities/fromCategory?categoryId=${categoryId}`);
         if (!res.ok) throw new Error("Failed to fetch amenities");
         const json = await res.json();
-            console.log(json,'json');
+        console.log(json, 'json');
 
         setAmenities(json?.data || []);
     };
@@ -63,7 +70,7 @@ const Amenities = () => {
             const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
             if (!res.ok) throw new Error("Failed to fetch saved amenities");
             const json = await res.json();
-            
+
             const normalized = (json?.data?.property_amenities || []).map((cat: any) => ({
                 category_id: cat.category_id,
                 item: (cat.item || []).map((a: any) => ({ id: a.id || a._id, featured: !!a.featured })),
@@ -146,6 +153,37 @@ const Amenities = () => {
         setHasChanges(true);
     }
 
+    // async function handleSubmit() {
+    //     try {
+    //         setSaving(true);
+    //         const payload = selectedAmenities.map((c) => ({
+    //             category_id: c.category_id,
+    //             item: c.item.map((i) => ({ id: i.id, featured: i.featured })),
+    //         }));
+
+    //         const res = await fetch(`/api/property/edit/property_amenities/${propertyId}`, {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ amenities: payload }),
+    //         });
+
+    //         if (!res.ok) {
+    //             const err = await res.json();
+    //             throw new Error(err?.error || "Save failed");
+    //         }
+
+    //         toast.success("Amenities updated");
+    //         await fetchSavedAmenities();
+    //         setHasChanges(false);
+    //     } catch (e) {
+    //         console.error(e);
+    //         toast.error("Failed to save amenities");
+    //     } finally {
+    //         setSaving(false);
+    //     }
+    // }
+
+
     async function handleSubmit() {
         try {
             setSaving(true);
@@ -154,27 +192,30 @@ const Amenities = () => {
                 item: c.item.map((i) => ({ id: i.id, featured: i.featured })),
             }));
 
-            const res = await fetch(`/api/property/edit/property_amenities/${propertyId}`, {
+            const res = await fetch(`/api/history/propertyamenities/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amenities: payload }),
+                body: JSON.stringify({
+                    propertyId,
+                    userId: userId, 
+                    newAmenities: payload,
+                }),
             });
 
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err?.error || "Save failed");
-            }
+            const json = await res.json();
+            if (!json.status) throw new Error(json.message);
 
-            toast.success("Amenities updated");
-            await fetchSavedAmenities();
+            toast.success(json.message || "Amenities change submitted for approval");
             setHasChanges(false);
-        } catch (e) {
-            console.error(e);
-            toast.error("Failed to save amenities");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to submit amenities changes");
         } finally {
             setSaving(false);
         }
     }
+
+
 
     const isAmenitySelected = (amenityId: string) =>
         !!selectedAmenities.find((c) => c.category_id === activeCategoryId && c.item.some((it) => it.id === amenityId));
@@ -195,71 +236,119 @@ const Amenities = () => {
                         <div className="col-span-3 max-h-[420px] overflow-y-auto">
                             <div className="space-y-2">
                                 {loading ? (
-                                    Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded" />)
+                                    <div className="space-y-2">
+                                        {Array.from({ length: 5 }).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-center gap-2 p-2 rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm animate-pulse"
+                                            >
+                                                <Skeleton className="h-5 w-5 rounded-full" />
+                                                <Skeleton className="h-5 w-32 rounded-md" />
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     categories.map((cat) => (
-                                        <button
+                                        <Button
                                             key={cat._id}
                                             onClick={() => changeCategory(cat._id)}
-                                            className={`w-full text-left px-3 py-2 rounded-md border transition flex items-center justify-between ${activeCategoryId === cat._id ? "bg-blue-50 border-blue-500" : "bg-white border-gray-200"
-                                                }`}
+                                            variant={'outline'}
+                                            className={`w-full rounded-xl ${activeCategoryId === cat._id ? 'border-zinc-500 shadow-2xl' : ''}`}
                                         >
                                             <span className="font-medium">{cat.title}</span>
                                             {activeCategoryId === cat._id && <Check className="ml-2" />}
-                                        </button>
+                                        </Button>
                                     ))
                                 )}
                             </div>
                         </div>
 
-                        <div className="col-span-9 max-h-[420px] overflow-y-auto">
+                        <div className="col-span-9 max-h-[420px] overflow-y-auto overflow-visible">
                             <ul className="space-y-2">
                                 {loading
-                                    ? Array.from({ length: 6 }).map((_, i) => (
-                                        <li key={i} className="flex items-center justify-between p-3 border rounded">
-                                            <Skeleton className="h-5 w-3/4" />
-                                            <Skeleton className="h-5 w-24" />
-                                        </li>
-                                    ))
+                                    ? (
+                                        <ul className="space-y-2">
+                                            {Array.from({ length: 6 }).map((_, i) => (
+                                                <li
+                                                    key={i}
+                                                    className="flex items-center justify-between p-4 border rounded-xl bg-white shadow-sm animate-pulse"
+                                                >
+                                                    <div className="flex justify-between items-center space-y-2 w-full">
+                                                        <Skeleton className="h-5 w-1/3 rounded-md m-0 p-0" />
+                                                        <div className="flex items-center justify-end gap-6">
+                                                            <Skeleton className="h-5 w-16 rounded-md" />
+                                                            <Skeleton className="h-5 w-16 rounded-md" />
+                                                            <Skeleton className="h-5 w-20 rounded-md" />
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )
                                     : amenities.map((amen) => {
                                         const selected = isAmenitySelected(amen._id);
                                         const featured = isAmenityFeatured(amen._id);
+
                                         return (
                                             <li
                                                 key={amen._id}
-                                                className="flex items-center justify-between p-3 border rounded bg-white"
+                                                className="flex items-center justify-between p-3 border bg-white rounded-xl shadow-lg"
                                             >
-                                                <div>
+                                                <div className="flex items-center gap-2">
+                                                    <Image src={amen.photo} width={20} height={20} alt="icon" />
                                                     <div className="font-medium">{amen.title}</div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4">
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selected}
-                                                            onChange={(e) => toggleAmenity(amen._id, activeCategoryId, e.target.checked, featured)}
-                                                            className="accent-blue-600 h-4 w-4"
-                                                        />
-                                                        <span className="text-sm">Available</span>
-                                                    </label>
-
-                                                    <label className={`flex items-center gap-2 ${!selected ? "opacity-50 pointer-events-none" : ""}`}>
-                                                        <input
-                                                            type="checkbox"
+                                                <div className="flex items-center gap-8 bg-zinc-50 px-4 py-2 rounded-full">
+                                                    <RadioGroup
+                                                        defaultValue={selected ? "yes" : "no"}
+                                                        className="flex items-center gap-4"
+                                                        onValueChange={(value) => {
+                                                            toggleAmenity(
+                                                                amen._id,
+                                                                activeCategoryId,
+                                                                value === "yes",
+                                                                featured
+                                                            );
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center space-x-2">
+                                                            <RadioGroupItem value="yes" id={`yes-${amen._id}`} />
+                                                            <Label htmlFor={`yes-${amen._id}`} className="text-sm font-medium">
+                                                                Yes
+                                                            </Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <RadioGroupItem value="no" id={`no-${amen._id}`} />
+                                                            <Label htmlFor={`no-${amen._id}`} className="text-sm font-medium">
+                                                                No
+                                                            </Label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                    <div
+                                                        className={`flex items-center gap-2 ${!selected ? "opacity-50 pointer-events-none" : ""
+                                                            }`}
+                                                    >
+                                                        <Checkbox
+                                                            id={`featured-${amen._id}`}
                                                             checked={featured}
-                                                            onChange={(e) => toggleFeatured(amen._id, activeCategoryId, e.target.checked)}
-                                                            className="accent-amber-500 h-4 w-4"
+                                                            onCheckedChange={(checked) =>
+                                                                toggleFeatured(amen._id, activeCategoryId, checked === true)
+                                                            }
+                                                            className="data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
                                                         />
-                                                        <span className="text-sm">Featured</span>
-                                                        {featured && <Star className="ml-1 h-4 w-4" />}
-                                                    </label>
+                                                        <Label htmlFor={`featured-${amen._id}`} className="text-sm font-medium">
+                                                            Featured
+                                                        </Label>
+                                                        {featured && <Star className="h-4 w-4 text-amber-500" />}
+                                                    </div>
                                                 </div>
                                             </li>
                                         );
                                     })}
                             </ul>
                         </div>
+
                     </div>
 
                     <div className="mt-4 flex justify-end gap-3">
@@ -269,7 +358,7 @@ const Amenities = () => {
                         <Button
                             onClick={handleSubmit}
                             disabled={saving || loading}
-                            className="rounded-full"
+                            className="rounded-xl"
                         >
                             {saving ? (
                                 <span className="flex items-center gap-2"><Loader2 className="animate-spin" /> Saving...</span>

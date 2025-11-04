@@ -57,8 +57,10 @@ const Spinner = () => (
 
 export default function LocationAdd({
   propertyId,
+  userId
 }: {
   propertyId: string | null;
+  userId: string | undefined
 }) {
   const [cities, setCities] = useState<City[]>([]);
   const [distances, setDistances] = useState<DistanceItem[]>([]);
@@ -81,7 +83,7 @@ export default function LocationAdd({
   const fetchPropertyDistances = async () => {
     if (!propertyId) return;
     try {
-      const res = await fetch(`/api/property/get/${propertyId}`);
+      const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
       const json = await res.json();
       const property = json.data;
       if (property) {
@@ -113,8 +115,7 @@ export default function LocationAdd({
   ) => {
     setDistances((prev) => {
       const copy = [...prev];
-      // @ts-ignore
-      copy[index][field] = value;
+      (copy[index] as any)[field] = value;
       return copy;
     });
   };
@@ -130,48 +131,103 @@ export default function LocationAdd({
     setDistances((prev) => prev.filter((_, i) => i !== index));
   };
 
+
   const toggleEdit = (index: number) => {
     setDistances((prev) => {
       const copy = [...prev];
-      copy[index].isEditing = !copy[index].isEditing;
+
+      if (copy[index].isEditing) {
+        const current = copy[index];
+        if (!current.city.trim() || !current.distance.trim()) {
+          toast.error("Please fill both city and distance before saving");
+          return prev;
+        }
+      }
+
+      // Toggle the isEditing value
+      copy[index] = { ...copy[index], isEditing: !copy[index].isEditing };
       return copy;
     });
   };
 
-  const handleSaveAll = async () => {
-    if (!propertyId) return toast.error("Property ID not found");
 
-    const invalid = distances.some(
-      (d) => !d.city.trim() || !d.distance.trim()
-    );
-    if (invalid) return toast.error("Please fill all city and distance fields");
 
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/property/update/${propertyId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          distance_from: distances.map(({ city, distance }) => ({
-            city,
-            distance,
-          })),
-        }),
-      });
-      const json = await res.json();
-      if (json.status) {
-        toast.success("Updated successfully");
-        fetchPropertyDistances();
-      } else {
-        toast.error(json.message || "Update failed");
-      }
-    } catch (err) {
-      console.error("handleSaveAll error", err);
-      toast.error("Update failed");
-    } finally {
-      setLoading(false);
+  // const handleSaveAll = async () => {
+  //   if (!propertyId) return toast.error("Property ID not found");
+
+  //   const invalid = distances.some(
+  //     (d) => !d.city.trim() || !d.distance.trim()
+  //   );
+  //   if (invalid) return toast.error("Please fill all city and distance fields");
+
+  //   setLoading(true);
+  //   try {
+  //     const res = await fetch(`/api/property/update/${propertyId}`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(distances.map(({ city, distance }) => ({
+  //         city,
+  //         distance,
+  //       })),),
+  //     });
+  //     const json = await res.json();
+  //     console.log(json, 'json');
+  //     console.log(distances.map(({ city, distance }) => ({
+  //       city,
+  //       distance,
+  //     })))
+
+  //     if (json.status) {
+  //       toast.success("Updated successfully");
+  //       fetchPropertyDistances();
+  //     } else {
+  //       toast.error(json.message || "Update failed");
+  //     }
+  //   } catch (err) {
+  //     console.error("handleSaveAll error", err);
+  //     toast.error("Update failed");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleSaveAll = async () => {
+  if (!propertyId) return toast.error("Property ID not found");
+
+  const invalid = distances.some((d) => !d.city.trim() || !d.distance.trim());
+  if (invalid) return toast.error("Please fill all city and distance fields");
+
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/history/location/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        propertyId,
+        userId,
+        newDistances: distances.map(({ city, distance }) => ({
+          city,
+          distance,
+        })),
+      }),
+    });
+
+    const json = await res.json();
+    console.log("distance history response", json);
+
+    if (json.status) {
+      toast.success(json.message || "Distance changes submitted for approval");
+      fetchPropertyDistances(); // Refresh list
+    } else {
+      toast.error(json.message || "Failed to submit distance changes");
     }
-  };
+  } catch (err) {
+    console.error("handleSaveAll error", err);
+    toast.error("Failed to submit distance changes");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <Card className="mt-6 border shadow-none">
@@ -198,14 +254,13 @@ export default function LocationAdd({
               className="grid grid-cols-1 md:grid-cols-8 gap-3 items-end border-b pb-3"
             >
               <div className="md:col-span-3 w-full">
-                <Label className="mb-2">Location</Label>
-                {item.isEditing ? (
+                <div className="md:col-span-3 w-full">
+                  <Label className="mb-2">Location</Label>
                   <Select
+                    disabled={!item.isEditing}
                     value={item.city}
-                    onValueChange={(value) =>
-                      handleChange(index, "city", value)
-                    }
-                    
+
+                    onValueChange={(value) => handleChange(index, "city", value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select city" />
@@ -218,22 +273,22 @@ export default function LocationAdd({
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
-                  <Input className="w-full" readOnly value={item.city} />
-                )}
+                </div>
+
               </div>
 
               <div className="md:col-span-3">
                 <Label className="mb-2">Distance (km)</Label>
                 <Input
                   value={item.distance}
-                  onChange={(e) =>
-                    handleChange(index, "distance", e.target.value)
-                  }
+                  onChange={(e) => handleChange(index, "distance", e.target.value)}
+                  disabled={!item.isEditing}
                   readOnly={!item.isEditing}
                   placeholder="e.g. 12 km"
                 />
+
               </div>
+
 
               <div className="flex gap-2 md:col-span-2">
                 <Button
@@ -246,17 +301,12 @@ export default function LocationAdd({
 
                 <Button
                   onClick={() => toggleEdit(index)}
-                  className={`flex items-center gap-2 ${
-                    item.isEditing ? "bg-black text-white" : ""
-                  }`}
+                  className={`flex items-center gap-2 ${item.isEditing ? "bg-black text-white" : ""}`}
                 >
-                  {item.isEditing ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <Edit2 className="w-4 h-4" />
-                  )}
+                  {item.isEditing ? <Check className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
                   {item.isEditing ? "Save" : "Edit"}
                 </Button>
+
               </div>
             </div>
           ))}
