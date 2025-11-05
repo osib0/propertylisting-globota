@@ -96,8 +96,8 @@ const SortablePhoto = ({
                 className="block w-[150px] h-[150px] rounded overflow-hidden"
             >
                 <Image
-                    src={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/propertyPhotos/${photo.photo_name}`}
-                    alt={photo.photo_name}
+                     src={photo.photo_name}
+                    alt={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/propertyPhotos/${photo.photo_name}`}
                     width={150}
                     height={150}
                     className="object-cover w-full h-full"
@@ -123,7 +123,7 @@ const PropertyPhotos = () => {
     const fetchPhotos = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/propertyphotos/get?propertyId=${propertyId}`, { cache: "no-store" });
+            const res = await fetch(`/api/propertyphotos/get/${propertyId}`, { cache: "no-store" });
             const data = await res.json();
             const list: Photo[] = Array.isArray(data?.data) ? data.data : [];
             list.sort((a, b) => a.photo_sort_id - b.photo_sort_id);
