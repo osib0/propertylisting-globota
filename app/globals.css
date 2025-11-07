@@ -125,3 +125,7 @@
 [data-slot="sidebar-container"]{
   border: 0;
 }
+
+[data-slot="sidebar-content"]{
+  padding: 0;
+}

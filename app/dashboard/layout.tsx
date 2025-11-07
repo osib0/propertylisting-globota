@@ -1,7 +1,6 @@
 import { CustomSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import SidebartriggerCompoent from "./_compoents/sidebartrigger";
-import Approve from "./_compoents/aprove";
+// import Approve from "./_compoents/aprove";
 
 
 
@@ -12,10 +11,9 @@ export default function RootLayout({
 }>) {
     return (
         <main className="bg-[#fafafa]">
-            <Approve/>
+            {/* <Approve/> */}
             <SidebarProvider>
                 <CustomSidebar />
-                <SidebartriggerCompoent />
                 {children}
             </SidebarProvider>
         </main>

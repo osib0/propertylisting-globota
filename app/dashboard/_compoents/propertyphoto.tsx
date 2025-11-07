@@ -92,7 +92,6 @@ export default function PropertyPhotos({
   // }, [defaultData, shareData,form]);
 
   useEffect(() => {
-    form.trigger("property_photos");
     setShareData((prev: any) => ({
       ...prev,
       property_photos: photos,
@@ -131,6 +130,7 @@ export default function PropertyPhotos({
       }
     }
     setUploading(false);
+    form.trigger();
   };
 
   // -------------------------
@@ -168,65 +168,66 @@ export default function PropertyPhotos({
                 Upload high-quality property images (JPG, PNG, WebP)
               </p>
             </div>
-
-            {/* Photo Grid */}
-            {loading ? (
-              <SkeletonGrid />
-            ) : photos.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 my-6">
-                {photos.map((photo, idx) => (
-                  <Card
-                    key={idx}
-                    className="relative overflow-hidden group rounded-xl border p-0 shadow-sm"
-                  >
-                    <Image
-                      src={photo.url}
-                      alt={`photo-${idx}`}
-                      width={400}
-                      height={400}
-                      className="object-cover w-full h-48 sm:h-56 rounded-xl transition-all duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removePhoto(idx)}
-                        className="flex items-center gap-1"
-                      >
-                        <Trash className="w-4 h-4" />
-                        Remove
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center my-10 py-8  bg-muted/10">
-                <ImageIcon className="w-10 h-10 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground text-sm">
-                  No photos uploaded yet
-                </p>
-              </div>
-            )}
-
-            {/* Dropzone */}
-            <FormField
-              control={form.control}
-              name="property_photos"
-              render={() => (
-                <FormItem>
-                  <FormControl>
-                    <Dropzone
-                      multiple
-                      onFiles={(files) => handlePhotoUpload(files)}
-                      note="Upload JPG, PNG, or WebP images (max size 5MB)."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="flex gap-2 flex-wrap items-start">
+              {/* Photo Grid */}
+              {loading ? (
+                <SkeletonGrid />
+              ) : photos.length > 0 ? (
+                <>
+                  {photos.map((photo, idx) => (
+                    <Card
+                      key={idx}
+                      className="relative overflow-hidden group p-0 shadow-none w-50 h-50 border rounded-xl"
+                    >
+                      <Image
+                        src={photo.url}
+                        alt={`photo-${idx}`}
+                        width={400}
+                        height={400}
+                        className="object-cover w-full h-50 sm:h-56 rounded-xl transition-all duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removePhoto(idx)}
+                          className="flex items-center gap-1"
+                        >
+                          <Trash className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center  bg-muted/10 w-50 h-50 border rounded-xl">
+                  <ImageIcon className="w-10 h-10 text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground text-sm">
+                    No photos uploaded yet
+                  </p>
+                </div>
               )}
-            />
+
+              {/* Dropzone */}
+              <FormField
+                control={form.control}
+                name="property_photos"
+                render={() => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Dropzone
+                        multiple
+                        onFiles={(files) => handlePhotoUpload(files)}
+                        note="Upload JPG, PNG,WebP"
+                      />
+                    </FormControl>
+                    <FormMessage className="absolute -bottom-7 text-xs -translate-x-1/2 left-1/2 whitespace-nowrap" />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           {/* Footer Buttons */}
@@ -287,7 +288,8 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+      className={`relative border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+        w-50 h-50 border 
         ${isDragActive
           ? "border-primary bg-primary/10 shadow-md scale-[1.01]"
           : "border-muted bg-muted/5 hover:bg-muted/10 hover:border-primary/60"

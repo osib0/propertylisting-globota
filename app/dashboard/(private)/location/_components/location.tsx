@@ -205,47 +205,47 @@ const Location = () => {
   //     setLoading(false);
   //   }
   // };
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!isMounted.current) return;
-  setLoading(true);
-  setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isMounted.current) return;
+    setLoading(true);
+    setError(null);
 
-  try {
-    const res = await fetch(`/api/history/location/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        propertyId,
-        userId,
-        newLocation: {
-          address,
-          pincode,
-          city,
-          landmark,
-          lat: coordinates.lat,
-          lng: coordinates.lng,
-        },
-      }),
-    });
+    try {
+      const res = await fetch(`/api/history/location/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId,
+          userId,
+          newLocation: {
+            address,
+            pincode,
+            city,
+            landmark,
+            lat: coordinates.lat,
+            lng: coordinates.lng,
+          },
+        }),
+      });
 
-    const json = await res.json();
-    console.log("location history response", json);
+      const json = await res.json();
+      console.log("location history response", json);
 
-    if (json.status) {
-      toast.success(
-        json.message || "Location changes submitted for approval"
-      );
-    } else {
-      toast.error(json.message || "Failed to submit location changes");
+      if (json.status) {
+        toast.success(
+          json.message || "Location changes submitted for approval"
+        );
+      } else {
+        toast.error(json.message || "Failed to submit location changes");
+      }
+    } catch (err) {
+      console.error("handleSubmit error", err);
+      toast.error("Failed to submit location changes");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("handleSubmit error", err);
-    toast.error("Failed to submit location changes");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const renderLatitude = () => (typeof coordinates.lat === "number" ? coordinates.lat.toFixed(6) : "0.000000");
@@ -301,7 +301,10 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div className="flex justify-end">
-                <Button type="submit" className="w-32" disabled={loading}>
+                <Button type="submit" disabled={loading}
+                  className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer w-32"
+
+                >
                   {loading ? "Updating..." : "Update"}
                 </Button>
               </div>

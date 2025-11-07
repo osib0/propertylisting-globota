@@ -406,7 +406,8 @@ const BasicInfo = () => {
                   <>
                     <Button
                       onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                      className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
+
                     >
                       <Save size={16} /> Save
                     </Button>
@@ -424,7 +425,7 @@ const BasicInfo = () => {
                 ) : (
                   <Button
                     onClick={() => setIsEditing(true)}
-                    className="bg-gray-900 hover:bg-gray-800 flex items-center gap-2"
+                    className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
                   >
                     <Edit3 size={16} /> Edit
                   </Button>

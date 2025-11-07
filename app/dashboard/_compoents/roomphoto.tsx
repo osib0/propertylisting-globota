@@ -68,14 +68,14 @@ function Dropzone({
   return (
     <div
       {...getRootProps()}
-      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+      className={`relative w-50 h-50 border-2 border-dashed rounded-xl p-7 text-center cursor-pointer transition-all
         ${isDragActive
           ? "border-primary bg-primary/10 shadow-md scale-[1.01]"
           : "border-muted bg-muted/5 hover:bg-muted/10 hover:border-primary/60"
         }`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center justify-center space-y-3">
+      <div className="flex flex-col items-center justify-center space-y-1">
         <div
           className={`w-14 h-14 rounded-full flex items-center justify-center 
             ${isDragActive ? "bg-primary text-white" : "bg-muted text-primary"}`}
@@ -270,7 +270,7 @@ export default function RoomPhotos({ setShareData, shareData, defaultData }: any
                   name={`room_photos.${idx}`}
                   render={() => (
                     <FormItem>
-                      <Card className="border shadow-sm rounded-xl">
+                      <Card className="border shadow-none p-0 m-0 rounded-none border-b border-x-0 border-t-0">
                         <div className="p-6 space-y-4">
                           <div className="flex justify-between items-center">
                             <h3 className="font-semibold text-lg capitalize flex items-center gap-2">
@@ -283,7 +283,7 @@ export default function RoomPhotos({ setShareData, shareData, defaultData }: any
 
                           <Dropzone
                             onFiles={(files) => handleUpload(room.category, files)}
-                            note="Upload JPG, PNG, or WebP up to 5MB."
+                            note="Upload JPG, PNG, WebP"
                           />
 
                           {formState.errors.room_photos?.[idx]?.photos && (

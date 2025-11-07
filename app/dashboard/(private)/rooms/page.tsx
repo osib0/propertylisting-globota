@@ -25,7 +25,8 @@ const Page = () => {
         setAddRoom,
         setEdit,
         setEditRateplan,
-        propertyId
+        propertyId,
+        userId
     } = useAppContext();
 
     const handleAddRateplan = (roomId: string) => {
@@ -88,6 +89,7 @@ const Page = () => {
                 <RoomAdd
                     setAddRoom={setAddRoom}
                     propertyId={propertyId}
+                    userId={userId}
                 />
             )}
 

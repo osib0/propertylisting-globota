@@ -144,8 +144,8 @@ export default function StepOne({ setMaxStepReached, setStep, setLoading, proper
                                 <SelectValue placeholder="Choose..." />
                             </SelectTrigger>
                             <SelectContent>
-                                {roomTypes.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
+                                {roomTypes.map((opt,index) => (
+                                    <SelectItem key={index} value={opt.value}>
                                         {opt.label}
                                     </SelectItem>
                                 ))}
@@ -167,8 +167,8 @@ export default function StepOne({ setMaxStepReached, setStep, setLoading, proper
                                 <SelectValue placeholder="Choose..." />
                             </SelectTrigger>
                             <SelectContent>
-                                {roomViews.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
+                                {roomViews.map((opt,inde) => (
+                                    <SelectItem key={inde} value={opt.value}>
                                         {opt.label}
                                     </SelectItem>
                                 ))}

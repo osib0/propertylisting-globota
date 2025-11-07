@@ -264,7 +264,7 @@ export default function RoomAmenities({
                     </span>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                     {dbAmenities.map((data) => (
                       <Card
                         key={data._id}
@@ -275,55 +275,62 @@ export default function RoomAmenities({
                             : ""
                           }`}
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="font-medium text-base truncate">
-                            {data.title}
-                          </span>
-                          {data.photo && (
-                            <Image
-                              src={data.photo}
-                              alt={data.title}
-                              width={22}
-                              height={22}
-                              className="object-contain"
-                            />
-                          )}
-                        </div>
+                        <div className="flex items-center justify-between">
 
-                        <RadioGroup
-                          className="flex gap-4"
-                          value={roomAmenities[data.title] || ""}
-                          onValueChange={(val: "yes" | "no") =>
-                            handleAmenityChoice(roomName, data.title, val)
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            <RadioGroupItem
-                              value="yes"
-                              id={`${roomIdx}-${data._id}-yes`}
-                              className="border-green-500 data-[state=checked]:bg-green-500"
-                            />
-                            <Label
-                              htmlFor={`${roomIdx}-${data._id}-yes`}
-                              className="text-sm cursor-pointer"
-                            >
-                              Yes
-                            </Label>
+                          <div className="flex items-center gap-1">
+                            {data.photo && (
+                              <Image
+                                src={data.photo}
+                                alt={data.title}
+                                width={12}
+                                height={12}
+                                className="object-contain"
+                              />
+                            )}
+                            <span className="font-medium  text-[11px] truncate">
+                              {data.title}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <RadioGroupItem
-                              value="no"
-                              id={`${roomIdx}-${data._id}-no`}
-                              className="border-red-500 data-[state=checked]:bg-red-500"
-                            />
-                            <Label
-                              htmlFor={`${roomIdx}-${data._id}-no`}
-                              className="text-sm cursor-pointer"
-                            >
-                              No
-                            </Label>
-                          </div>
-                        </RadioGroup>
+
+                          <RadioGroup
+                            className="flex gap-1"
+                            value={roomAmenities[data.title] || ""}
+                            onValueChange={(val: "yes" | "no") =>
+                              handleAmenityChoice(roomName, data.title, val)
+                            }
+                          >
+                            <div className="flex items-center gap-1">
+                              <RadioGroupItem
+
+                                value="yes"
+                                id={`${roomIdx}-${data._id}-yes`}
+                                className="h-3 w-3"
+
+                              />
+                              <Label
+                                htmlFor={`${roomIdx}-${data._id}-yes`}
+                                className="text-sm cursor-pointer  text-[11px]"
+                              >
+                                Yes
+                              </Label>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <RadioGroupItem
+
+                                value="no"
+                                id={`${roomIdx}-${data._id}-no`}
+                                className="h-3 w-3"
+
+                              />
+                              <Label
+                                htmlFor={`${roomIdx}-${data._id}-no`}
+                                className="text-sm cursor-pointer  text-[11px]"
+                              >
+                                No
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
                       </Card>
                     ))}
                   </div>

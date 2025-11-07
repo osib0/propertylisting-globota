@@ -469,7 +469,7 @@ const PropertyPhotos = () => {
                             return found ? (
                                 <div className="w-[100px] h-[100px] rounded overflow-hidden shadow">
                                     <Image
-                                        src={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/propertyPhotos/${found.photo_name}`}
+                                        src={`${found.photo_name}`}
                                         alt="Dragged photo"
                                         width={100}
                                         height={100}

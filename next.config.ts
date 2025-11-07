@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "royalrajasthantravel.s3.amazonaws.com",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname:"royalrajasthantravel.s3.amazonaws.com",
+        pathname: "**",
+      }
     ],
   }
 };

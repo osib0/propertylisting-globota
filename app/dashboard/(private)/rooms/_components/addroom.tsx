@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { ArrowLeft, Check, ChevronRight } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -22,10 +22,11 @@ const STEPS = [
 interface RoomAddProps {
     setAddRoom: (value: boolean) => void;
     propertyId: string | null;
+    userId:string | undefined;
 }
 
 
-const RoomAdd = ({ setAddRoom, propertyId }: RoomAddProps) => {
+const RoomAdd = ({ setAddRoom, propertyId,userId }: RoomAddProps) => {
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1);
     const [maxStepReached, setMaxStepReached] = useState(1);
@@ -46,6 +47,8 @@ const RoomAdd = ({ setAddRoom, propertyId }: RoomAddProps) => {
         }
     };
 
+    
+ 
     // Memoize the current step component to prevent unnecessary re-renders
     const CurrentStepComponent = useMemo(() => {
         const { component: Component } = STEPS[step - 1] || {};
@@ -57,6 +60,7 @@ const RoomAdd = ({ setAddRoom, propertyId }: RoomAddProps) => {
                 }
                 setLoading={setLoading}
                 propertyId={propertyId}
+                userId={userId}
                 setAddRoom={step === STEPS.length ? setAddRoom : undefined}
                 sharedFormData={sharedFormData}
                 setSharedFormData={setSharedFormData}

@@ -301,7 +301,7 @@ const handleSaveAll = async () => {
 
                 <Button
                   onClick={() => toggleEdit(index)}
-                  className={`flex items-center gap-2 ${item.isEditing ? "bg-black text-white" : ""}`}
+                  className={`flex items-center gap-2 ${item.isEditing ? "bg-black text-white" : "bg-black"}`}
                 >
                   {item.isEditing ? <Check className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
                   {item.isEditing ? "Save" : "Edit"}
@@ -314,7 +314,9 @@ const handleSaveAll = async () => {
 
         {distances.length > 0 && (
           <div className="mt-4 flex justify-end">
-            <Button onClick={handleSaveAll} disabled={loading}>
+            <Button onClick={handleSaveAll} disabled={loading} 
+                    className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
+            >
               {loading ? (
                 <div className="flex items-center">
                   <Spinner /> Saving...

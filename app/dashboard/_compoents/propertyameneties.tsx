@@ -116,56 +116,60 @@ export default function PropertyAmenities({
                     <span>Selected: {summary.selectedCount}</span>
                 </div>
 
-                <div className="w-full max-w-4xl mx-auto grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="w-full max-w-4xl mx-auto grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {/* <div className="w-full max-w-4xl mx-auto flex flex-wrap gap-2"> */}
                     {dbAmenities.map((data) => (
                         <Card
                             key={data._id}
-                            className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-200 ${selectedAmenities[data.title] === "yes"
+                            className={`p-3 rounded-2xl border hover:shadow-md transition-all duration-200 ${selectedAmenities[data.title] === "yes"
                                 ? "border-green-500 shadow-md"
                                 : selectedAmenities[data.title] === "no"
                                     ? "border-red-400"
                                     : ""
                                 }`}
                         >
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="font-medium text-base truncate">{data.title}</span>
-                                <Image
-                                    src={data.photo}
-                                    alt={data.title}
-                                    width={22}
-                                    height={22}
-                                    className="object-contain"
-                                />
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1">
+                                    <Image
+                                        src={data.photo}
+                                        alt={data.title}
+                                        width={12}
+                                        height={12}
+                                        className="object-contain"
+                                    />
+                                    <span className="font-medium text-[11px] truncate">{data.title}</span>
+                                </div>
+                                <RadioGroup
+                                    className="flex gap-1"
+                                    value={selectedAmenities[data.title] || ""}
+                                    onValueChange={(val: "yes" | "no") =>
+                                        handleAmenityChoice(data.title, val)
+                                    }
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <RadioGroupItem
+                                            value="yes"
+                                            id={`${data._id}-yes`}
+                                            className="h-3 w-3"
+                                        />
+                                        <Label htmlFor={`${data._id}-yes`} className="cursor-pointer text-[11px]">
+                                            Yes
+                                        </Label>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <RadioGroupItem
+                                            value="no"
+                                            id={`${data._id}-no`}
+                                            className="h-3 w-3"
+                                        />
+                                        <Label htmlFor={`${data._id}-no`} className="cursor-pointer text-[11px]">
+                                            No
+                                        </Label>
+                                    </div>
+                                </RadioGroup>
                             </div>
 
-                            <RadioGroup
-                                className="flex gap-4"
-                                value={selectedAmenities[data.title] || ""}
-                                onValueChange={(val: "yes" | "no") =>
-                                    handleAmenityChoice(data.title, val)
-                                }
-                            >
-                                <div className="flex items-center gap-2">
-                                    <RadioGroupItem
-                                        value="yes"
-                                        id={`${data._id}-yes`}
-                                        className="border-green-500 data-[state=checked]:bg-green-500"
-                                    />
-                                    <Label htmlFor={`${data._id}-yes`} className="text-sm cursor-pointer">
-                                        Yes
-                                    </Label>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <RadioGroupItem
-                                        value="no"
-                                        id={`${data._id}-no`}
-                                        className="border-red-500 data-[state=checked]:bg-red-500"
-                                    />
-                                    <Label htmlFor={`${data._id}-no`} className="text-sm cursor-pointer">
-                                        No
-                                    </Label>
-                                </div>
-                            </RadioGroup>
+
                         </Card>
                     ))}
                 </div>

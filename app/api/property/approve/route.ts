@@ -71,6 +71,70 @@ export async function POST(req: Request) {
 
       await propertyPhotoModel.create(propertyPhotos);
     }
+    if (Array.isArray(listProp.room_detail) && listProp.room_detail.length > 0) {
+      await roomModel.deleteMany({ propertyId: newProperty._id });
+
+      const roomDocs = listProp.room_detail.map((room: any) => {
+        // 🔹 Extract occupancy safely
+        let occupancy = room.occupancy;
+
+        if (!occupancy && Array.isArray(listProp.sleepingArrangement)) {
+          const matched = listProp.sleepingArrangement.find(
+            (r: any) => r.roomName === room.roomName
+          );
+          if (matched?.occupancy) occupancy = matched.occupancy;
+        }
+
+        if (!occupancy) {
+          occupancy = {
+            baseAdults: 1,
+            maxAdults: 1,
+            maxChildren: 0,
+            maxOccupancy: 1,
+          };
+        }
+
+        let mergedBedTypes: any[] = [];
+
+        const roomBedTypes = Array.isArray(room.bedTypes) ? room.bedTypes : [];
+
+        const sleepBedTypes =
+          listProp.sleepingArrangement?.find(
+            (r: any) => r.roomName === room.roomName
+          )?.bedTypes || [];
+
+        mergedBedTypes = [...roomBedTypes, ...sleepBedTypes];
+
+        mergedBedTypes = mergedBedTypes.filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => t.type === item.type)
+        );
+
+        return {
+          propertyId: newProperty._id,
+          room_name: room.roomName || "",
+          room_type: room.roomType || "",
+          room_quantity: room.numRooms || 1,
+          room_view: room.roomView || "",
+          room_area: room.roomSizeValue || "",
+          unit: room.roomSizeUnit || "",
+          bathroomCount: room.numBathrooms || 1,
+          description: room.description || "",
+          bedTypes: mergedBedTypes, // ✅ full array of beds
+          alternateBed:
+            mergedBedTypes.some((b) => b.alternateBed === "yes") ? "yes" : "no",
+          extraBed:
+            mergedBedTypes.some((b) => b.extraBed === "yes") ? "yes" : "no",
+          occupancy,
+          room_amenities: room.room_amenities || [],
+          status: "active",
+          files: room.files || [],
+        };
+      });
+
+      await roomModel.create(roomDocs);
+    }
+
 
     // Mark approved
     await listpropertyModel.updateOne(
@@ -82,6 +146,7 @@ export async function POST(req: Request) {
       { $set: { propertyId: newProperty._id } },
       { new: true }
     );
+
 
     if (!user) {
       console.warn(`User with ID ${ownerId} not found`);

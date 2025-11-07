@@ -1,8 +1,8 @@
-    "use client";
+"use client";
 
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
-import {Skeleton} from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,9 +20,9 @@ const renderSkeletonRow = (count: number = 1) =>
   Array.from({ length: count }).map((_, index) => (
     <TableRow key={index}>
       <TableCell colSpan={4}>
-        <Skeleton  />
-        <Skeleton  />
-        <Skeleton  />
+        <Skeleton />
+        <Skeleton />
+        <Skeleton />
       </TableCell>
     </TableRow>
   ));
@@ -78,8 +78,10 @@ const RoomTableList: React.FC<RoomTableListProps> = ({
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/room/roomlist/${propertyId}`);
+      const res = await fetch(`/api/rooms/roomlist?propertyId=${propertyId}`);
       const result = await res.json();
+      console.log(result);
+      
       if (result.success) {
         setRooms(result.data || []);
       } else {
@@ -96,7 +98,6 @@ const RoomTableList: React.FC<RoomTableListProps> = ({
     fetchRooms();
   }, []);
 
-  // ✅ Handlers
   const mainCheckboxHandler = async (
     id: string,
     events: ChangeEvent<HTMLInputElement>
@@ -190,7 +191,7 @@ const RoomTableList: React.FC<RoomTableListProps> = ({
         <div className="overflow-x-auto rounded-md">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
+              <TableRow>
                 <TableHead>Room Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Actions</TableHead>
@@ -205,9 +206,8 @@ const RoomTableList: React.FC<RoomTableListProps> = ({
                   <TableCell colSpan={4} className="text-center py-8">
                     <p className="text-muted-foreground mb-3">No rooms found.</p>
                     <Button
-                      variant="outline"
                       onClick={() => setAddRoom(true)}
-                      className="rounded-xl"
+                      className="rounded-xl bg-blue-700 hover:bg-blue-800 text-white cursor-pointer"
                     >
                       Add Your First Room
                     </Button>

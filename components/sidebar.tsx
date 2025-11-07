@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -25,22 +25,11 @@ import {
   Image as ImageIcon,
   ListFilter,
   Bed,
-  CupSoda,
   User,
-  LogOut,
 } from "lucide-react";
 
-import logoIcon from "@/app/favicon.ico";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import logoIcon from "@/public/logo-removebg-preview.png";
+
 
 const menuItems = [
   { label: "Basic Info", href: "/dashboard/basic-info" },
@@ -76,24 +65,21 @@ export function CustomSidebar() {
 
   return (
     <>
-      <Sidebar collapsible="offcanvas" className="bg-white">
-        <SidebarContent className="bg-white px-3 flex flex-col justify-between h-full">
+      <Sidebar collapsible="offcanvas" className="bg-transparent p-0">
+        <SidebarContent className="bg-[#4360ed] text-white px-3 flex flex-col justify-between h-full">
           <div>
-            {/* Logo + Status */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center bg-[#003b95] h-[85px]">
               <Image
                 src={logoIcon}
                 alt="icon"
-                width={50}
-                height={50}
-                className="bg-white mb-2"
+                width={500}
+                height={500}
+                className="mb-2 object-cover w-96 h-[76px]"
               />
-              <Badge className="bg-green-100 text-green-700">Approved</Badge>
+              {/* <Badge className="bg-green-100 text-green-700">Approved</Badge> */}
             </div>
-
-            {/* Menu */}
             <SidebarGroup>
-              <SidebarGroupLabel>Menu</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-white">Menu</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {menuItems.map((item) => {
@@ -121,44 +107,8 @@ export function CustomSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
           </div>
-
-          {/* Logout */}
-          <Button
-            onClick={() => setOpen(true)}
-            className="mb-5"
-            variant={"secondary"}
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </Button>
         </SidebarContent>
       </Sidebar>
-
-      {/* Logout Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Logout</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to logout?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setOpen(false);
-                signOut({ callbackUrl: "/sign-up" });
-              }}
-            >
-              Yes, Logout
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

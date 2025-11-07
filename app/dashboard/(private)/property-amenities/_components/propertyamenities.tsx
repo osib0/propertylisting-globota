@@ -43,7 +43,7 @@ const Amenities = () => {
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [saving, setSaving] = useState<boolean>(false);
 
-    const { propertyId ,userId} = useAppContext()
+    const { propertyId, userId } = useAppContext()
 
     const fetchCategories = async () => {
         const res = await fetch(`/api/propertyamenitiestype/get`);
@@ -197,7 +197,7 @@ const Amenities = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     propertyId,
-                    userId: userId, 
+                    userId: userId,
                     newAmenities: payload,
                 }),
             });
@@ -253,10 +253,10 @@ const Amenities = () => {
                                             key={cat._id}
                                             onClick={() => changeCategory(cat._id)}
                                             variant={'outline'}
-                                            className={`w-full rounded-xl ${activeCategoryId === cat._id ? 'border-zinc-500 shadow-2xl' : ''}`}
+                                            className={`w-full rounded-xl ${activeCategoryId === cat._id ? 'border-blue-700 shadow-2xl' : ''}`}
                                         >
                                             <span className="font-medium">{cat.title}</span>
-                                            {activeCategoryId === cat._id && <Check className="ml-2" />}
+                                            {activeCategoryId === cat._id && <Check className="ml-2 text-blue-700" />}
                                         </Button>
                                     ))
                                 )}
@@ -358,7 +358,8 @@ const Amenities = () => {
                         <Button
                             onClick={handleSubmit}
                             disabled={saving || loading}
-                            className="rounded-xl"
+                            className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer rounded-xl"
+
                         >
                             {saving ? (
                                 <span className="flex items-center gap-2"><Loader2 className="animate-spin" /> Saving...</span>
