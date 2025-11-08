@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const renderSkeletonRow = (count: number = 1) =>
   Array.from({ length: count }).map((_, index) => (
@@ -80,7 +79,7 @@ const RoomTableList: React.FC<RoomTableListProps> = ({
     try {
       const res = await fetch(`/api/rooms/roomlist?propertyId=${propertyId}`);
       const result = await res.json();
-      console.log(result);
+      console.log(result,'room list');
       
       if (result.success) {
         setRooms(result.data || []);

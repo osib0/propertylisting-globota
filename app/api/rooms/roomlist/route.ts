@@ -1,29 +1,37 @@
 import dbConnect from "@/lib/db";
 import roomModel from "@/model/rooms.model";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const id:any = searchParams.get('propertyId')
   try {
     await dbConnect();
 
-    const { searchParams } = new URL(req.url);
-    const propertyId = searchParams.get("propertyId");
-
-    if (!propertyId) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, error: "Property ID is required" },
+        { success: false, error: "Invalid propertyId format" },
         { status: 400 }
       );
     }
 
-    const rooms = await roomModel.find({ propertyId }).lean();
+    const rooms = await roomModel.aggregate([
+      {
+        $match: { propertyId: new mongoose.Types.ObjectId(id) },
+      },
+      {
+        $lookup: {
+          from: "roomrateplans",
+          localField: "_id",
+          foreignField: "roomId",
+          as: "ratePlans",
+        },
+      },
+    ]);
 
     return NextResponse.json({ success: true, data: rooms });
   } catch (error: any) {
-    console.error("Error fetching rooms:", error);
-    return NextResponse.json(
-      { success: false, error: error.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error.message });
   }
 }

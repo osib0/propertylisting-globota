@@ -96,11 +96,11 @@ const Page = () => {
 
             {/* ---------- EDIT ROOM ---------- */}
             {isEdit && (
-        <RoomCategoryEdit
-          setEdit={setEdit}
-          id={editId}
-        />
-      )}
+                <RoomCategoryEdit
+                    setEdit={setEdit}
+                    id={editId}
+                />
+            )}
         </div>
     );
 };

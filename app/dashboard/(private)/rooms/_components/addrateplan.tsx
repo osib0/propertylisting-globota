@@ -1,7 +1,4 @@
-// path: components/propertymanagement/property/room/rateplan/rateplanadd/RatePlans.tsx
 "use client";
-
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -29,7 +26,8 @@ import {
   RadioGroupItem,
 } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
-import { Loader2 ,ChevronLeft} from "lucide-react";
+import { Loader2, ChevronLeft } from "lucide-react";
+import { useAppContext } from "@/app/contextapi";
 
 interface Item {
   itemsId: string;
@@ -77,9 +75,7 @@ export default function AddRateplanForm({
   const [cancellationPolicy, setCancellationPolicy] = useState<string>("");
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
   const [isSuperPackage, setIsSuperPackage] = useState<boolean>(false);
-
-  const params = useParams();
-  const propertyId = (params as any).id;
+const {propertyId} = useAppContext()
 
   // Fetch data
   useEffect(() => {
@@ -213,7 +209,7 @@ export default function AddRateplanForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Rateplan Name */}
         <div>
-          <Label htmlFor="rateplan">Rateplan Name <span className="text-red-500">*</span></Label>
+          <Label className="mb-2" htmlFor="rateplan">Rateplan Name <span className="text-red-500">*</span></Label>
           <Input
             list="ratePlans"
             id="rateplan"
@@ -231,7 +227,7 @@ export default function AddRateplanForm({
 
         {/* Mealplan Dropdown */}
         <div>
-          <Label>Mealplan Name</Label>
+          <Label className="mb-2">Mealplan Name</Label>
           <Select
             value={selectedMealId}
             onValueChange={(value) => setSelectedMealId(value)}
@@ -240,7 +236,7 @@ export default function AddRateplanForm({
               <SelectValue placeholder="(Blank / None)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">(Blank / None)</SelectItem>
+              <SelectItem value="none">(Blank / None)</SelectItem>
               {mealplan.map((el, idx) => (
                 <SelectItem key={idx} value={el._id}>
                   {el.title.split("_").join(" ")}
@@ -248,13 +244,14 @@ export default function AddRateplanForm({
               ))}
             </SelectContent>
           </Select>
+
         </div>
 
         {/* Mealplan Checkboxes */}
         {selectedMeal?.items?.length ? (
           <div className="flex flex-wrap gap-3">
             {selectedMeal.items.map((item, idx) => (
-              <div key={idx} className="flex items-center space-x-2">
+              <div key={idx} className="flex items-center space-x-1">
                 <Checkbox
                   checked={selectedMeals.some((m) => m.itemsId === item.itemsId)}
                   onCheckedChange={() => handleMealChange(item)}
@@ -267,7 +264,7 @@ export default function AddRateplanForm({
 
         {/* Activity Dropdown */}
         <div>
-          <Label>Activities Name</Label>
+          <Label className="mb-2">Activities Name</Label>
           <Select
             value={selectedActivityId}
             onValueChange={(value) => setSelectedActivityId(value)}
@@ -276,7 +273,6 @@ export default function AddRateplanForm({
               <SelectValue placeholder="(Blank / None)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">(Blank / None)</SelectItem>
               {activity.map((el, idx) => (
                 <SelectItem key={idx} value={el._id}>
                   {el.title.split("_").join(" ")}
@@ -288,9 +284,9 @@ export default function AddRateplanForm({
 
         {/* Activity Checkboxes */}
         {selectedActivity?.items?.length ? (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {selectedActivity.items?.map((item, idx) => (
-              <div key={idx} className="flex items-center space-x-2">
+              <div key={idx} className="flex items-center space-x-1">
                 <Checkbox
                   checked={selectedActivities.some((a) => a.itemsId === item.itemsId)}
                   onCheckedChange={() => handleActivityChange(item)}
@@ -318,7 +314,7 @@ export default function AddRateplanForm({
             </div>
             <div className="flex items-center space-x-2 mt-2">
               <RadioGroupItem value="non_refundable" id="nonRefund" />
-              <Label htmlFor="nonRefund" className="text-sm">
+              <Label  htmlFor="nonRefund" className="text-sm">
                 Non-Refundable
               </Label>
             </div>
@@ -334,7 +330,7 @@ export default function AddRateplanForm({
         </div>
 
         {/* Super Package */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <Checkbox
             checked={isSuperPackage}
             onCheckedChange={(val) => setIsSuperPackage(!!val)}
@@ -344,7 +340,7 @@ export default function AddRateplanForm({
 
         {/* Submit */}
         <div className="text-right">
-          <Button type="submit" disabled={saveLoading} className="min-w-40">
+          <Button type="submit" disabled={saveLoading} className="min-w-40 bg-blue-700 hover:bg-blue-800">
             {saveLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save and Continue
           </Button>

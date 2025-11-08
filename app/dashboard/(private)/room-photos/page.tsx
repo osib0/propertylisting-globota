@@ -78,7 +78,7 @@ const SortablePhoto = ({ photo, propertyId, roomId }: { photo: Photo; propertyId
     return (
         <div ref={setNodeRef} {...attributes} {...listeners} className="rounded overflow-hidden" style={style}>
             <Image
-                src={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/${roomId}/${photo.photo_name}`}
+                src={`${photo.photo_name}`}
                 alt={photo.photo_name}
                 width={160}
                 height={120}
@@ -496,7 +496,7 @@ export default function Page() {
                                 .find((p) => p._id === activeId);
                             return found ? (
                                 <Image
-                                    src={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/${found.roomId}/${found.photo_name}`}
+                                    src={`${found.photo_name}`}
                                     alt="Dragged photo"
                                     width={120}
                                     height={90}

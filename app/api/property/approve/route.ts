@@ -5,6 +5,7 @@ import roomModel from "@/model/rooms.model";
 import propertyPhotoModel from "@/model/propertyPhotos.model";
 import UserModel from "@/model/user.model";
 import { NextResponse } from "next/server";
+import roomphotosModel from "@/model/roomphotos.model";
 
 export async function POST(req: Request) {
   try {
@@ -132,7 +133,45 @@ export async function POST(req: Request) {
         };
       });
 
-      await roomModel.create(roomDocs);
+      const newRooms = await roomModel.create(roomDocs);
+      
+    
+       
+       if (Array.isArray(listProp.room_photos) && listProp.room_photos.length > 0) {
+         const roomPhotos: any[] = [];
+       
+         for (const roomPhotoGroup of listProp.room_photos) {
+           const { category, photos } = roomPhotoGroup;
+       
+           const matchedRoom =
+             newRooms.find(
+               (r: any) =>
+                 r.room_name?.toLowerCase() === category?.toLowerCase() ||
+                 r.room_type?.toLowerCase() === category?.toLowerCase()
+             ) || null;
+       
+           if (matchedRoom && Array.isArray(photos)) {
+             photos.forEach((photo: any, index: number) => {
+               roomPhotos.push({
+                 roomId: matchedRoom._id,
+                 property_id: newProperty._id,
+                 photo_name: photo.url || "",
+                 photo_sort_id: index + 1,
+                 photo_tag: [category || "default"],
+               });
+             });
+           } else {
+             console.warn(`⚠️ No matching room found for category "${category}"`);
+           }
+         }
+       
+         if (roomPhotos.length > 0) {
+           await roomphotosModel.insertMany(roomPhotos);
+           console.log(`✅ ${roomPhotos.length} room photos added successfully`);
+         } else {
+           console.log("⚠️ No valid room photos found to insert.");
+         }
+       }
     }
 
 

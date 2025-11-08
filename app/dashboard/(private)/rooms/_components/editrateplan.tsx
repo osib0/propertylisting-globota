@@ -80,6 +80,8 @@ export default function EditRateplans({ roomId, onBack }: EditRateplansProps) {
 
       const res = await fetch(`/api/roomrateplan/get/${roomId}`);
       const json = await res.json();
+      console.log(json,'roomrateplan');
+      
 
       if (json.success) {
         const rp = json.data;
@@ -155,7 +157,7 @@ export default function EditRateplans({ roomId, onBack }: EditRateplansProps) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Rateplan Name */}
               <div>
-                <Label>
+                <Label className="mb-2"> 
                   Rateplan Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -173,7 +175,7 @@ export default function EditRateplans({ roomId, onBack }: EditRateplansProps) {
 
               {/* Mealplan */}
               <div>
-                <Label>
+                <Label className="mb-2"> 
                   Mealplan Name <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -217,7 +219,7 @@ export default function EditRateplans({ roomId, onBack }: EditRateplansProps) {
 
               {/* Activity */}
               <div>
-                <Label>
+                <Label className="mb-2"> 
                   Activity Name <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -297,7 +299,7 @@ export default function EditRateplans({ roomId, onBack }: EditRateplansProps) {
               </div>
 
               <div className="text-end">
-                <Button type="submit" className="bg-gray-900 hover:bg-gray-800 text-white">
+                <Button type="submit" className="bg-blue-700 hover:bg-blue-800 text-white">
                   Save and Continue
                 </Button>
               </div>
