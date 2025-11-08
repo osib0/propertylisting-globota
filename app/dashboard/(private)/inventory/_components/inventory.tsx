@@ -1,5 +1,4 @@
 "use client";
-
 import {
     useEffect,
     useState,
@@ -41,13 +40,13 @@ interface DateItem {
     day: string;
     date: number;
     month: string;
-    fullDate: string; 
+    fullDate: string;
 }
 
 interface InventoryItem {
     _id: string;
     room_id: string;
-    date: string; 
+    date: string;
     available_rooms: number;
     status: "block" | "unblock";
     property_id: string;
@@ -128,49 +127,49 @@ const ManageInventory = () => {
         setDates(generateDates(startDate));
     }, [startDate, generateDates]);
 
-    // useEffect(() => {
-    //     let abort = new AbortController();
-    //     (async () => {
-    //         if (!propertyId) return;
+    useEffect(() => {
+        let abort = new AbortController();
+        (async () => {
+            if (!propertyId) return;
 
-    //         try {
-    //             setBootLoading(true);
-    //             setError(null);
+            try {
+                setBootLoading(true);
+                setError(null);
 
-    //             const r = await fetch(`/api/room/roomlist/${propertyId}`, {
-    //                 signal: abort.signal,
-    //                 cache: "no-store",
-    //             });
-    //             const j = await r.json();
-    //             if (!j?.success) throw new Error(j?.error || "Failed to load rooms");
+                const r = await fetch(`/api/rooms/roomlist?propertyId=${propertyId}`, {
+                    signal: abort.signal,
+                    cache: "no-store",
+                });
+                const j = await r.json();
+                if (!j?.success) throw new Error(j?.error || "Failed to load rooms");
 
-    //             const rooms: Room[] = (j.data || []).map((x: any) => ({
-    //                 _id: x._id,
-    //                 room_name: x.room_name,
-    //                 ratePlans: x.ratePlans || [],
-    //             }));
+                const rooms: Room[] = (j.data || []).map((x: any) => ({
+                    _id: x._id,
+                    room_name: x.room_name,
+                    ratePlans: x.ratePlans || [],
+                }));
 
 
 
-    //             setRoomState(rooms);
+                setRoomState(rooms);
 
-    //             const planMap = new Map<string, RatePlan>();
-    //             rooms.forEach((rm) => {
-    //                 (rm.ratePlans || []).forEach((p) => {
-    //                     if (!planMap.has(p._id)) planMap.set(p._id, p);
-    //                 });
-    //             });
-    //             setRatePlan(Array.from(planMap.values()));
-    //         } catch (e: any) {
-    //             if (e?.name !== "AbortError")
-    //                 setError(e?.message || "Failed to load rooms");
-    //         } finally {
-    //             setBootLoading(false);
-    //         }
-    //     })();
+                const planMap = new Map<string, RatePlan>();
+                rooms.forEach((rm) => {
+                    (rm.ratePlans || []).forEach((p) => {
+                        if (!planMap.has(p._id)) planMap.set(p._id, p);
+                    });
+                });
+                setRatePlan(Array.from(planMap.values()));
+            } catch (e: any) {
+                if (e?.name !== "AbortError")
+                    setError(e?.message || "Failed to load rooms");
+            } finally {
+                setBootLoading(false);
+            }
+        })();
 
-    //     return () => abort.abort();
-    // }, [propertyId]);
+        return () => abort.abort();
+    }, [propertyId]);
 
     useEffect(() => {
         let abort = new AbortController();
@@ -240,6 +239,8 @@ const ManageInventory = () => {
             const url = `/api/roominventory/get?startDate=${start}&endDate=${end}&propertyId=${propertyId}&type=${currentType}`;
             const res = await fetch(url, { signal });
             const json = await res.json();
+            console.log(json, 'inventory data');
+
             if (!json?.success)
                 throw new Error(json?.error || "Failed to load inventory");
 
@@ -709,7 +710,7 @@ const ManageInventory = () => {
                                                             <Button
                                                                 variant="link"
                                                                 size="sm"
-                                                                className="text-xs text-secondary h-auto p-0"
+                                                                className="text-xs text-gray-600 h-auto p-0"
                                                                 onClick={() => showExtraprice(plan._id)}
                                                             >
                                                                 Extra Rates & Restrictions

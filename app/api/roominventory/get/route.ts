@@ -79,12 +79,12 @@ export async function GET(req: NextRequest) {
       .exec();
 
     // Normalize date -> "YYYY-MM-DD" (UTC)
-    const data = docs.map((item: any) => {
+    const result = docs.map((item: any) => {
       const d = item.date instanceof Date ? item.date : new Date(item.date);
       return { ...item, date: d.toISOString().slice(0, 10) };
     });
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data:result });
   } catch (error: any) {
     console.error("Error fetching inventory:", error);
     return NextResponse.json(
