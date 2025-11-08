@@ -42,8 +42,10 @@ import dbConnect from "@/lib/db";
 import roomModel from "@/model/rooms.model";
 import { NextResponse } from "next/server";
 
-export async function GET(req:Request,{params}:any) {
-    const {id} = params
+export async function GET(req: Request, { params }: any) {
+  const { id } =await params
+  console.log(id,'room id');
+  
   try {
     await dbConnect();
     const room = await roomModel.findById(id);

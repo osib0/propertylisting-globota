@@ -8,6 +8,7 @@ import RoomTableList from "./_components/roomlist";
 import AddRateplanForm from "./_components/addrateplan";
 import EditRateplans from "./_components/editrateplan";
 import RoomAdd from "./_components/addroom";
+import RoomCategoryEdit from "./_components/editroom";
 
 
 
@@ -94,12 +95,12 @@ const Page = () => {
             )}
 
             {/* ---------- EDIT ROOM ---------- */}
-            {/* {isEdit && (
+            {isEdit && (
         <RoomCategoryEdit
           setEdit={setEdit}
           id={editId}
         />
-      )} */}
+      )}
         </div>
     );
 };
