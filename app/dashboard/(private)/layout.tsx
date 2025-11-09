@@ -10,9 +10,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAprove } = useAppContext();
+  const { isListingData } = useAppContext();
+  console.log(isListingData?.status);
 
-  if (!isAprove) {
+
+  if (isListingData?.status == undefined || isListingData?.status === "pending") {
     redirect('/dashboard')
   }
 

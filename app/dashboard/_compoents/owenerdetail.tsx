@@ -14,7 +14,6 @@ import { useSession } from "next-auth/react";
 import Header from "./header";
 import { useAppContext } from "@/app/contextapi";
 
-// ✅ Improved Zod validation schema
 const ownerSchema = z.object({
   ownerName: z
     .string()
@@ -31,7 +30,7 @@ const ownerSchema = z.object({
     .refine((val) => !val || /^[0-9]{10}$/.test(val), {
       message: "Alternate phone must be 10 digits",
     }),
-   ownerEmail: z
+  ownerEmail: z
     .string()
     .email("Invalid email address"),
   ownerCompany: z.string().optional(),
@@ -67,7 +66,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
 }) => {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const { setTab } = useAppContext();
+  const { setTab, getListing } = useAppContext();
 
   const form = useForm<OwnerFormValues>({
     resolver: zodResolver(ownerSchema),
@@ -100,7 +99,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
       }));
     });
     return () => subscription.unsubscribe();
-  }, [form.watch, setShareData]);
+  }, [form.watch, setShareData, session?.user?.id]);
 
   const fields = [
     { name: "ownerName", label: "Owner Name *", placeholder: "Full legal name" },
@@ -113,8 +112,12 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
   ];
 
   const onSubmit = async (values: OwnerFormValues) => {
-    console.log(shareData,'shareData');
-    
+    console.log(shareData, 'shareData');
+    if (!session?.user?.id) {
+      console.log('no id found');
+      return
+    }
+
     try {
       setLoading(true);
       const payload = { ...shareData, owner_details: values };
@@ -126,10 +129,11 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
 
       if (!res.ok) throw new Error("Failed to save data");
       const result = await res.json();
+
       if (result.success) {
         toast.success("Details saved successfully");
       }
-      handleNext?.();
+      getListing()
     } catch (err: any) {
       console.error("Error:", err);
       toast.error("Failed to save details");
@@ -141,7 +145,7 @@ const OwnerDetails: React.FC<OwnerDetailsProps> = ({
   return (
     <div className="flex flex-col min-h-screen w-full">
       <Header
-      status={form.formState.isValid}
+        status={form.formState.isValid}
         title="Owner / Host Details"
         description="Provide owner’s verified contact details for communication and KYC."
       />

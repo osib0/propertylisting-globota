@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       const updated = await listpropertyModel.findOneAndUpdate(
         { ownerId },
         { $set: body },
-        { new: true }
+        { new: true ,upsert:true}
       );
 
       if (!updated) {

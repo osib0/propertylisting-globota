@@ -22,6 +22,7 @@ interface AppContextType {
   setAddRateplan: Dispatch<SetStateAction<boolean>>;
   isEditRateplan: boolean;
   setEditRateplan: Dispatch<SetStateAction<boolean>>;
+  getListing:()=>void
 }
 
 
@@ -40,19 +41,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [isAddRateplan, setAddRateplan] = useState<boolean>(false);
   const [isEditRateplan, setEditRateplan] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
 
-    (async function () {
+
+  const getListing = async ()=>{
       try {
         const response = await fetch(`/api/listproperty/get?ownerId=${session?.user?.id}`);
         const result = await response.json();
-        setAproved(result?.data?.approved || false);
+        setAproved(result?.data?.status === "approve" || false);
         setListingData(result?.data);
       } catch (error) {
         console.error(error);
       }
-    })();
+  }
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+   getListing()
   }, [session?.user?.id]);
 
 
@@ -92,7 +96,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       isAddRateplan,
       setAddRateplan,
       isEditRateplan,
-      setEditRateplan
+      setEditRateplan,
+      getListing
     }}>
       {children}
     </AppContext.Provider>

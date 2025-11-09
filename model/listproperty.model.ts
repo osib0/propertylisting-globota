@@ -26,7 +26,7 @@ const RoomSchema = new Schema(
 );
 
 const RoomPhotoSchema = new Schema({
-  category: { type: String, required: true },
+  category: { type: String },
   photos: [
     {
       url: { type: String },
@@ -151,7 +151,14 @@ const ListSchema = new Schema(
       ownerGstin: String,
       ownerWebsite: String,
     },
-    approved: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    remarks: { type: String, default: "" },
+    reviewedBy: { type: String, default: "" },
+    reviewedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

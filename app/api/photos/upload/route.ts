@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "File must be less than 20MB" }, { status: 400 });
     }
 
-    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"];
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp", "application/pdf","application/octet-stream"];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json({ message: "Invalid file type" }, { status: 400 });
     }

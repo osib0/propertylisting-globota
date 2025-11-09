@@ -318,8 +318,11 @@ const Documents: React.FC<DocumentsProps> = ({
                                     onRemove={() => removeFile(item.key as keyof DocumentsData)}
                                     accept={{
                                         "application/pdf": [".pdf"],
-                                        "image/*": [".jpg", ".jpeg", ".png", ".webp"],
+                                        "image/jpeg": [".jpg", ".jpeg"],
+                                        "image/png": [".png"],
+                                        "image/webp": [".webp"],
                                     }}
+
                                 />
                             </div>
                         );

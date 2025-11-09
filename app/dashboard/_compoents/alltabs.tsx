@@ -11,15 +11,19 @@ import RoomAmenities from './roomamenities';
 import RoomPhotos from './roomphoto';
 import Documents from './document';
 import OwnerDetails from './owenerdetail';
-import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import ThankYou from './thank';
 
 const Alltabs = () => {
     const [shareData, setShareData] = useState<any>({});
-    const { isTab, isListingData, isAprove } = useAppContext();
-    const { data: session } = useSession();
+    const { isTab, isListingData } = useAppContext();
 
-    if (isAprove) {
+    
+    if (isListingData?.status == "pending") {
+        return <ThankYou />;
+    }
+
+    if (isListingData?.status == "approve") {
         redirect('/dashboard/basic-info')
     }
 
