@@ -65,7 +65,7 @@ export function CustomSidebar() {
 
   return (
     <>
-      <Sidebar collapsible="offcanvas" className="bg-transparent p-0">
+      <Sidebar collapsible="icon" className="bg-transparent p-0">
         <SidebarContent className="bg-[#4360ed] text-white px-3 flex flex-col justify-between h-full">
           <div>
             <div className="flex justify-between items-center bg-[#003b95] h-[85px]">
