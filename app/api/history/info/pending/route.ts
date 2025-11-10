@@ -11,8 +11,9 @@ export async function GET(req: Request) {
 
     const pending = await HistoryModel.findOne({
       propertyId,
+      section: "basicInfo",
       status: "pending",
-    }).sort({ createdAt: -1 }); // latest pending record
+    }).sort({ createdAt: -1 }); 
 
     if (pending) {
       return NextResponse.json({ status: true, data: pending });

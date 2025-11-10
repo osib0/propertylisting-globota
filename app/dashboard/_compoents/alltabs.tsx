@@ -23,7 +23,7 @@ const Alltabs = () => {
         return <ThankYou />;
     }
 
-    if (isListingData?.status == "approve") {
+    if (isListingData?.status == "approved") {
         redirect('/dashboard/basic-info')
     }
 

@@ -79,6 +79,7 @@ const ListSchema = new Schema(
       type: String,
       required: true
     },
+    
     property_detail: {
       propertyTitle: { type: String, },
       propertyType: { type: String, },

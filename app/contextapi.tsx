@@ -47,7 +47,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await fetch(`/api/listproperty/get?ownerId=${session?.user?.id}`);
         const result = await response.json();
-        setAproved(result?.data?.status === "approve" || false);
+        setAproved(result?.data?.status === "approved" || false);
         setListingData(result?.data);
       } catch (error) {
         console.error(error);

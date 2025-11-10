@@ -51,6 +51,7 @@ const Location = () => {
   const [landmark, setLandmark] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [pending,setPending] = useState<boolean>(false)
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -64,37 +65,45 @@ const Location = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchLocation = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/property/edit/location/${propertyId}`);
-        if (res.ok) {
-          const data = await res.json();
-          console.log('location data', data);
+ useEffect(() => {
+  const fetchLocation = async () => {
+    setLoading(true);
+    try {
+      const pendingRes = await fetch(`/api/history/info/location/pending?propertyId=${propertyId}&userId=${userId}`);
+      const pendingData = await pendingRes.json();
 
-          const lat = typeof data.lat === "number" ? data.lat : parseFloat(data.lat) || defaultCenter.lat;
-          const lng = typeof data.lng === "number" ? data.lng : parseFloat(data.lng) || defaultCenter.lng;
-          if (isNaN(lat) || isNaN(lng)) throw new Error("Invalid coordinates");
-
-          setCoordinates({ lat, lng });
-          setAddress(data.address || "");
-          setPincode(data.pincode || "");
-          setLandmark(data.landmark || "");
-          setCity(data.city || "");
-        } else {
-          console.warn("No location found in DB");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch location data");
-      } finally {
-        setLoading(false);
+      if (pendingData.status && pendingData.data) {
+        toast("You have a pending location edit request (awaiting admin approval)");
+        setPending(true)
+        return; // stop fetching main data
       }
-    };
 
-    if (propertyId) fetchLocation();
-  }, [propertyId]);
+      // 🔹 2️⃣ Fetch main property location from DB
+      const res = await fetch(`/api/property/edit/location/${propertyId}`);
+      if (res.ok) {
+        setPending(false)
+        const data = await res.json();
+        const lat = parseFloat(data.lat) || defaultCenter.lat;
+        const lng = parseFloat(data.lng) || defaultCenter.lng;
+        setCoordinates({ lat, lng });
+        setAddress(data.address || "");
+        setPincode(data.pincode || "");
+        setLandmark(data.landmark || "");
+        setCity(data.city || "");
+      } else {
+        console.warn("No location found in DB");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch location data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (propertyId) fetchLocation();
+}, [propertyId, userId]);
+
 
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
@@ -169,42 +178,6 @@ const Location = () => {
     }
   }, [googleMapsApiKey]);
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!isMounted.current) return;
-  //   setLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     const res = await fetch(`/api/property/edit/location/${propertyId}`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         address,
-  //         pincode,
-  //         city,
-  //         landmark,
-  //         lat: coordinates.lat,
-  //         lng: coordinates.lng,
-  //       }),
-  //     });
-
-  //     const data = await res.json(); 
-  //     console.log(data,'data');
-
-
-  //     if (res.ok) {
-  //       console.info("Location saved", data);
-  //     } else {
-  //       setError(data.error || "Failed to save location");
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     setError("Failed to save location");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isMounted.current) return;
@@ -212,13 +185,14 @@ const Location = () => {
     setError(null);
 
     try {
-      const res = await fetch(`/api/history/location/add`, {
+      const res = await fetch(`/api/history/info/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           propertyId,
           userId,
-          newLocation: {
+          section: "location",
+          newData: {
             address,
             pincode,
             city,
@@ -230,8 +204,6 @@ const Location = () => {
       });
 
       const json = await res.json();
-      console.log("location history response", json);
-
       if (json.status) {
         toast.success(
           json.message || "Location changes submitted for approval"
@@ -246,6 +218,7 @@ const Location = () => {
       setLoading(false);
     }
   };
+
 
 
   const renderLatitude = () => (typeof coordinates.lat === "number" ? coordinates.lat.toFixed(6) : "0.000000");
@@ -271,11 +244,11 @@ const Location = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="mb-2" htmlFor="city">City</Label>
-                  <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Jaisalmer" disabled={loading} />
+                  <Input id="city" value={city||'-'} onChange={(e) => setCity(e.target.value)} placeholder="Jaisalmer" disabled={pending||loading} />
                 </div>
                 <div>
                   <Label className="mb-2" htmlFor="postalCode">Postal Code</Label>
-                  <Input id="postalCode" value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="10001" disabled={loading} />
+                  <Input id="postalCode"  value={pincode||'-'} onChange={(e) => setPincode(e.target.value)} placeholder="10001" disabled={pending||loading} />
                 </div>
               </div>
 
@@ -292,16 +265,16 @@ const Location = () => {
 
               <div>
                 <Label className="mb-2" htmlFor="landmark">Landmark / Colony</Label>
-                <Input id="landmark" value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="Enter landmark or colony" disabled={loading} />
+                <Input id="landmark" value={landmark||'-'} onChange={(e) => setLandmark(e.target.value)} placeholder="Enter landmark or colony" disabled={pending||loading} />
               </div>
 
               <div>
                 <Label className="mb-2" htmlFor="address">Address</Label>
-                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="123 Main Street" disabled={loading} />
+                <Input id="address" value={address||'-'} onChange={(e) => setAddress(e.target.value)} placeholder="123 Main Street" disabled={pending||loading} />
               </div>
 
               <div className="flex justify-end">
-                <Button type="submit" disabled={loading}
+                <Button type="submit" disabled={pending||loading}
                   className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer w-32"
 
                 >
@@ -334,7 +307,7 @@ const Location = () => {
                             type="text"
                             placeholder="Search for a place"
                             className="w-full rounded-md border px-10 py-2 bg-white"
-                            disabled={loading}
+                            disabled={pending||loading}
                           />
                         </div>
                       </div>

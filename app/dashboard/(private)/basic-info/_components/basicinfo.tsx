@@ -40,7 +40,7 @@ const inputs: InputField[] = [
   // { label: "Listing Status", key: "listing_status" },
   { label: "Star Rating", key: "star_rating" },
   { label: "Property Build", key: "property_build" },
-  { label: "Accepting Booking Since", key: "accepting_booking_since", type: "date" },
+  { label: "Accepting Booking Since", key: "accepting_booking_since", },
   // { label: "Booking Status", key: "booking_status" },
   { label: "Locality", key: "locality" },
   { label: "Description", key: "description" },
@@ -77,25 +77,18 @@ const BasicInfo = () => {
     fetchPropertyTypes();
   }, []);
 
-  useEffect(() => {
-    if (!propertyId) return;
 
-    // (async function () {
-    //  try {
-    //    const historyRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
-    //   const result = await historyRes.json();
-    //   console.log(result);
-      
-    //  } catch (error) {
-    //   console.log(error);
-      
-    //  }
-
-
-    // })()
     async function fetchProperty() {
       try {
         setLoading(true);
+
+        const pendingRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
+        const pendingData = await pendingRes.json();
+        if (pendingData.status) {
+          toast("You have a pending edit request (awaiting admin approval)");
+          return;
+        }
+
         const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
         const result = await res.json();
         if (result.status) {
@@ -107,67 +100,24 @@ const BasicInfo = () => {
             booking_status: result.data.booking_status || "1",
             locality: result.data.locality || "",
           });
-          setPropertyTile(result?.data?.property_name)
+          setPropertyTile(result?.data?.property_name);
         }
       } catch {
-        toast.error("Failed to fetch property");
+        toast.error("Failed to fetch property info");
       } finally {
         setLoading(false);
       }
     }
+
+  useEffect(() => {
+    if (!propertyId) return;
+
+  
+
     fetchProperty();
   }, [propertyId]);
 
-  //   useEffect(() => {
-  //   if (!propertyId) return;
 
-  //   async function fetchProperty() {
-  //     try {
-  //       setLoading(true);
-
-  //       const historyRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
-  //       const historyData = await historyRes.json();
-
-  //       console.log("History data:", historyData); 
-
-  //       if (historyData.status && historyData.data) {
-  //         toast("Pending approval changes loaded");
-  //         setUser(historyData.data.newData || []);
-  //         setFormData({
-  //           ...historyData.data.newData,
-  //           property_status: historyData.data.newData.property_status || "1",
-  //           listing_status: historyData.data.newData.listing_status || "2",
-  //           booking_status: historyData.data.newData.booking_status || "1",
-  //           locality: historyData.data.newData.locality || "",
-  //         });
-  //       } else {
-  //         console.log("Fetching main property...");
-  //         const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
-  //         const result = await res.json();
-  //         console.log("Property data:", result); 
-  //         if (result.status) {
-  //           setUser(result.data || []);
-  //           setFormData({
-  //             ...result.data,
-  //             property_status: result.data.property_status || "1",
-  //             listing_status: result.data.listing_status || "2",
-  //             booking_status: result.data.booking_status || "1",
-  //             locality: result.data.locality || "",
-  //           });
-  //         } else {
-  //           toast.error("Failed to fetch property");
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching property:", error);
-  //       toast.error("Error fetching property data");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   fetchProperty();
-  // }, [propertyId]);
 
   useEffect(() => {
     async function fetchLocalities() {
@@ -191,37 +141,6 @@ const BasicInfo = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // const handleSave = async () => {
-  //   try {
-  //     const keysToSend = inputs.map((input) => input.key);
-  //     const filteredPayload: Record<string, any> = {};
-  //     keysToSend.forEach((key) => {
-  //       if (formData.hasOwnProperty(key)) filteredPayload[key] = formData[key];
-  //     });
-
-  //     filteredPayload.property_status = String(filteredPayload.property_status);
-  //     filteredPayload.listing_status = String(filteredPayload.listing_status);
-  //     filteredPayload.booking_status = String(filteredPayload.booking_status);
-
-  //     const res = await fetch(`/api/property/update/${propertyId}`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(filteredPayload),
-  //     });
-
-  //     const result = await res.json();
-  //     if (result.status) {
-  //       setUser(result.data);
-  //       setIsEditing(false);
-  //       toast.success("Property updated successfully");
-  //     } else {
-  //       toast.error(result.error || "Update failed");
-  //     }
-  //   } catch {
-  //     toast.error("An error occurred while saving");
-  //   }
-  // };
-
   const handleSave = async () => {
     try {
       const keysToSend = inputs.map((input) => input.key);
@@ -236,11 +155,14 @@ const BasicInfo = () => {
         body: JSON.stringify({
           propertyId,
           userId,
-          newData: filteredPayload,
+          section: "basicInfo",
+           newData: filteredPayload,
         }),
       });
 
       const result = await res.json();
+      console.log(result);
+      
       if (result.status) {
         toast.success("Changes sent for approval");
         setIsEditing(false);

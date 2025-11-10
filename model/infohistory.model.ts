@@ -3,6 +3,11 @@ import mongoose, { Schema } from "mongoose";
 const infoHistorySchema = new Schema({
   propertyId: { type: mongoose.Schema.Types.ObjectId, ref: "Property", required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  section: { 
+      type: String, 
+      required: true, 
+      enum: ["basicInfo", "location", "photos", "amenities", "policy", "pricing"] 
+    },
   changes: [
     {
       field: String,
