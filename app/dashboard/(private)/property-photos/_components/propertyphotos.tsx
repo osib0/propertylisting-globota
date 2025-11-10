@@ -28,7 +28,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 // import PhotoEditModel from "./PhotoEditModel";
 import { MoreVertical, Image as ImageIcon, CloudUpload, RefreshCw } from "lucide-react";
 import { useAppContext } from "@/app/contextapi";
@@ -121,10 +120,42 @@ const PropertyPhotos = () => {
     const { propertyId, userId } = useAppContext()
     /* -------- fetch & normalize -------- */
     const fetchPhotos = useCallback(async () => {
+        if (!propertyId || !userId) return;
         setLoading(true);
+
         try {
+            const pendingRes = await fetch(
+                `/api/history/info/pending?propertyId=${propertyId}&userId=${userId}&section=photos`
+            );
+            const pendingData = await pendingRes.json();
+
+            if (pendingData?.status && pendingData.data) {
+                const changesArray = Array.isArray(pendingData.data)
+                    ? pendingData.data.flatMap((item: any) => item.changes || [])
+                    : pendingData.data.changes || [];
+
+                if (changesArray.length > 0) {
+                    toast("You have a pending photo edit request (awaiting admin approval)");
+
+                    // setPhotos(
+                    //     changesArray.map((c: any) => ({
+                    //         _id: crypto.randomUUID(),
+                    //         photo_name: c.newValue?.filename || "",
+                    //         photo_sort_id: c.newValue?.sortOrder || 0,
+                    //         photo_tag: [],
+                    //     }))
+                    // );
+
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const res = await fetch(`/api/propertyphotos/get/${propertyId}`, { cache: "no-store" });
             const data = await res.json();
+
+            if (!res.ok) throw new Error("Failed to fetch photos");
+
             const list: Photo[] = Array.isArray(data?.data) ? data.data : [];
             list.sort((a, b) => a.photo_sort_id - b.photo_sort_id);
             setPhotos(list);
@@ -134,11 +165,12 @@ const PropertyPhotos = () => {
         } finally {
             setLoading(false);
         }
-    }, [propertyId]);
+    }, [propertyId, userId]);
 
     useEffect(() => {
-        fetchPhotos();
-    }, [fetchPhotos]);
+        if (propertyId && userId) fetchPhotos();
+    }, [propertyId, userId]);
+
 
     /* -------- helpers: progress state -------- */
     const setProgress = useCallback((uploadId: string, patch: Partial<UploadProgressItem>) => {
