@@ -84,7 +84,7 @@ const BasicInfo = () => {
     setValue,
     formState: { errors },
   } = useForm<BasicInfoForm>({
-    mode:'onSubmit',
+    mode: 'onChange',
     resolver: zodResolver(BasicInfoSchema),
   });
 
@@ -201,11 +201,7 @@ const BasicInfo = () => {
         <p className="text-muted-foreground text-sm">Use basic property information</p>
       </div>
       <Card className="border-0 rounded-2xl shadow-none backdrop-blur-sm">
-        <CardHeader className="pb-1 flex justify-between items-center">
-          <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            Property Information
-          </CardTitle>
-        </CardHeader>
+
 
         <CardContent className="pt-0">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -310,8 +306,8 @@ const BasicInfo = () => {
             </div>
 
             {!loading && (
-              <div className="flex justify-end gap-3 mt-8">
-                {isEditing ? (
+              <div className="flex justify-end gap-3 mt-4">
+                {isEditing && (
                   <>
                     <Button
                       type="submit"
@@ -329,18 +325,19 @@ const BasicInfo = () => {
                     </Button>
 
                   </>
-                ) : (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    type="button"
-                    className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Edit3 size={16} /> Edit
-                  </Button>
                 )}
               </div>
             )}
           </form>
+          {!isEditing &&
+            <Button
+              onClick={() => setIsEditing(true)}
+              type="button"
+              className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer ml-auto"
+            >
+              <Edit3 size={16} /> Edit
+            </Button>
+          }
         </CardContent>
       </Card>
     </div>
