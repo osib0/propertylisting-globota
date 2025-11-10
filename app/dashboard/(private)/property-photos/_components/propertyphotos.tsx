@@ -95,8 +95,8 @@ const SortablePhoto = ({
                 type="button"
                 className="block w-[150px] h-[150px] rounded overflow-hidden"
             >
-                <Image
-                     src={photo.photo_name}
+                <img
+                    src={photo.photo_name}
                     alt={`https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/propertyPhotos/${photo.photo_name}`}
                     width={150}
                     height={150}
@@ -118,7 +118,7 @@ const PropertyPhotos = () => {
 
     const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
-    const { propertyId } = useAppContext()
+    const { propertyId, userId } = useAppContext()
     /* -------- fetch & normalize -------- */
     const fetchPhotos = useCallback(async () => {
         setLoading(true);
@@ -197,6 +197,11 @@ const PropertyPhotos = () => {
             try {
                 const existingCount = photos.length;
 
+                const oldPhotos = photos.map((p) => ({
+                    filename: p.photo_name,
+                    sortOrder: p.photo_sort_id,
+                }));
+
                 for (let i = 0; i < acceptedFiles.length; i++) {
                     const file = acceptedFiles[i];
 
@@ -210,9 +215,9 @@ const PropertyPhotos = () => {
                     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
                     const filename = `${ts}-${rand}.${ext}`;
                     const uploadId = filename;
+
                     setProgress(uploadId, { name: file.name, percent: 0, status: "pending" });
 
-                    // 1) get presigned URL
                     const presRes = await fetch("/api/propertyphotos/s3-presigned-url", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -222,44 +227,68 @@ const PropertyPhotos = () => {
                             contentType: file.type,
                         }),
                     });
+
                     if (!presRes.ok) {
                         setProgress(uploadId, { status: "error" });
                         toast.error(`Failed to get upload URL for ${file.name}`);
                         continue;
                     }
+
                     const { url } = await presRes.json();
 
-                    // 2) upload to S3 (with progress)
+                    // 🔹 Step 2: Upload to S3
                     await uploadFileToS3(file, url, uploadId);
 
-                    // 3) save metadata to DB
-                    const photo_sort_id = existingCount + i + 1;
-                    const formData = new FormData();
-                    formData.append("property_id", propertyId || '');
-                    formData.append("filename", filename);
-                    formData.append("photo_sort_id", String(photo_sort_id));
+                    const fileUrl = `https://royalrajasthantravel.s3.ap-south-1.amazonaws.com/public/${propertyId}/propertyPhotos/${filename}`;
 
-                    const mongoRes = await fetch("/api/propertyphotos/add", {
+                    setPhotos((prev) => [
+                        ...prev,
+                        {
+                            _id: crypto.randomUUID(),
+                            photo_name: fileUrl,
+                            photo_sort_id: existingCount + i + 1,
+                            photo_tag: [],
+                        },
+                    ]);
+
+                    const historyRes = await fetch("/api/history/info/add", {
                         method: "POST",
-                        body: formData,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            propertyId,
+                            userId,
+                            section: "photos",
+                            changes: [
+                                {
+                                    field: "photo_gallery",
+                                    oldValue: null,
+                                    newValue: {
+                                        filename: fileUrl,
+                                        sortOrder: existingCount + i + 1,
+                                    },
+                                },
+                            ],
+                        }),
                     });
-                    const mongoJson = await mongoRes.json();
-                    if (!mongoRes.ok || !mongoJson?.success) {
-                        setProgress(uploadId, { status: "error" });
-                        toast.error(`DB save failed for ${file.name}`);
+
+
+                    const historyJson = await historyRes.json();
+                    if (historyJson.status) {
+                        toast.success("Photo upload request submitted for approval");
+                    } else {
+                        toast.error(historyJson.message || "Failed to log photo change");
                     }
                 }
 
-                await fetchPhotos();
-                toast.success("Upload complete");
                 clearAllProgressSoon();
             } catch (e) {
                 console.error("Upload error:", e);
                 toast.error("Upload error");
             }
         },
-        [propertyId, photos.length, fetchPhotos, setProgress, clearAllProgressSoon]
+        [propertyId, userId, photos, setProgress, clearAllProgressSoon]
     );
+
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,

@@ -82,7 +82,7 @@ const BasicInfo = () => {
       try {
         setLoading(true);
 
-        const pendingRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}`);
+        const pendingRes = await fetch(`/api/history/info/pending?propertyId=${propertyId}&userId=${userId}&section=basicInfo`);
         const pendingData = await pendingRes.json();
         if (pendingData.status) {
           toast("You have a pending edit request (awaiting admin approval)");

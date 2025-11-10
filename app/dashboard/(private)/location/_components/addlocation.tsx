@@ -83,6 +83,17 @@ export default function LocationAdd({
   const fetchPropertyDistances = async () => {
     if (!propertyId) return;
     try {
+      setLoading(true);
+      const pendingRes = await fetch(
+        `/api/history/info/pending?propertyId=${propertyId}&userId=${userId}&section=distance`
+      );
+      const pendingData = await pendingRes.json();
+
+      if (pendingData.status && pendingData.data) {
+        toast("You have a pending distance edit request (awaiting admin approval)");
+        setLoading(false);
+        return; // 🛑 Stop — don't fetch live property data while pending
+      }
       const res = await fetch(`/api/property/get?propertyId=${propertyId}`);
       const json = await res.json();
       const property = json.data;
@@ -150,84 +161,47 @@ export default function LocationAdd({
     });
   };
 
+  const handleSaveAll = async () => {
+    if (!propertyId) return toast.error("Property ID not found");
+    const invalid = distances.some((d) => !d.city.trim() || !d.distance.trim());
+    if (invalid) return toast.error("Please fill all city and distance fields");
 
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/history/info/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId,
+          userId,
+          section: "distance", // 🔹 same table — just a different section
+          newData: {
+            distance_from: distances.map(({ city, distance }) => ({
+              city,
+              distance,
+            })),
+          },
+        }),
+      });
 
-  // const handleSaveAll = async () => {
-  //   if (!propertyId) return toast.error("Property ID not found");
+      const json = await res.json();
+      console.log("distance infohistory response", json);
 
-  //   const invalid = distances.some(
-  //     (d) => !d.city.trim() || !d.distance.trim()
-  //   );
-  //   if (invalid) return toast.error("Please fill all city and distance fields");
-
-  //   setLoading(true);
-  //   try {
-  //     const res = await fetch(`/api/property/update/${propertyId}`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(distances.map(({ city, distance }) => ({
-  //         city,
-  //         distance,
-  //       })),),
-  //     });
-  //     const json = await res.json();
-  //     console.log(json, 'json');
-  //     console.log(distances.map(({ city, distance }) => ({
-  //       city,
-  //       distance,
-  //     })))
-
-  //     if (json.status) {
-  //       toast.success("Updated successfully");
-  //       fetchPropertyDistances();
-  //     } else {
-  //       toast.error(json.message || "Update failed");
-  //     }
-  //   } catch (err) {
-  //     console.error("handleSaveAll error", err);
-  //     toast.error("Update failed");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-const handleSaveAll = async () => {
-  if (!propertyId) return toast.error("Property ID not found");
-
-  const invalid = distances.some((d) => !d.city.trim() || !d.distance.trim());
-  if (invalid) return toast.error("Please fill all city and distance fields");
-
-  setLoading(true);
-  try {
-    const res = await fetch(`/api/history/location/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        propertyId,
-        userId,
-        newDistances: distances.map(({ city, distance }) => ({
-          city,
-          distance,
-        })),
-      }),
-    });
-
-    const json = await res.json();
-    console.log("distance history response", json);
-
-    if (json.status) {
-      toast.success(json.message || "Distance changes submitted for approval");
-      fetchPropertyDistances(); // Refresh list
-    } else {
-      toast.error(json.message || "Failed to submit distance changes");
+      if (json.status) {
+        toast.success(
+          json.message || "Distance changes submitted for approval"
+        );
+        fetchPropertyDistances(); // Refresh list
+      } else {
+        toast.error(json.message || "Failed to submit distance changes");
+      }
+    } catch (err) {
+      console.error("handleSaveAll error", err);
+      toast.error("Failed to submit distance changes");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("handleSaveAll error", err);
-    toast.error("Failed to submit distance changes");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <Card className="mt-6 border shadow-none">
@@ -314,8 +288,8 @@ const handleSaveAll = async () => {
 
         {distances.length > 0 && (
           <div className="mt-4 flex justify-end">
-            <Button onClick={handleSaveAll} disabled={loading} 
-                    className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
+            <Button onClick={handleSaveAll} disabled={loading}
+              className="bg-blue-700 hover:bg-blue-800 flex items-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <div className="flex items-center">

@@ -86,6 +86,16 @@ const Amenities = () => {
         const init = async () => {
             try {
                 setLoading(true);
+                const pendingRes = await fetch(
+                    `/api/history/info/pending?propertyId=${propertyId}&userId=${userId}&section=amenities`
+                );
+                const pendingData = await pendingRes.json();
+
+                if (pendingData.status && pendingData.data) {
+                    toast("You have a pending amenities edit request (awaiting admin approval)");
+                    setLoading(false);
+                    return; 
+                }
                 const cats = await fetchCategories();
                 if (!mounted) return;
                 setCategories(cats || []);
@@ -183,7 +193,6 @@ const Amenities = () => {
     //     }
     // }
 
-
     async function handleSubmit() {
         try {
             setSaving(true);
@@ -192,23 +201,30 @@ const Amenities = () => {
                 item: c.item.map((i) => ({ id: i.id, featured: i.featured })),
             }));
 
-            const res = await fetch(`/api/history/propertyamenities/add`, {
+            const res = await fetch(`/api/history/info/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     propertyId,
-                    userId: userId,
-                    newAmenities: payload,
+                    userId,
+                    section: "amenities",
+                    newData: {
+                        property_amenities: payload,
+                    },
                 }),
             });
 
             const json = await res.json();
-            if (!json.status) throw new Error(json.message);
+            console.log("Amenities infohistory response:", json);
 
-            toast.success(json.message || "Amenities change submitted for approval");
-            setHasChanges(false);
+            if (json.status) {
+                toast.success(json.message || "Amenities changes submitted for approval");
+                setHasChanges(false);
+            } else {
+                toast.error(json.message || "Failed to submit amenities changes");
+            }
         } catch (err) {
-            console.error(err);
+            console.error("handleSubmit error", err);
             toast.error("Failed to submit amenities changes");
         } finally {
             setSaving(false);

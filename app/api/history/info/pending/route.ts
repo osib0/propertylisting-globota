@@ -1,26 +1,47 @@
 import dbConnect from "@/lib/db";
-import HistoryModel from "@/model/infohistory.model";
+import InfoHistoryModel from "@/model/infohistory.model";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const propertyId = searchParams.get("propertyId");
-
   try {
     await dbConnect();
+    const { searchParams } = new URL(req.url);
+    const propertyId = searchParams.get("propertyId");
+    const userId = searchParams.get("userId");
+    const section = searchParams.get("section");
 
-    const pending = await HistoryModel.findOne({
-      propertyId,
-      section: "basicInfo",
-      status: "pending",
-    }).sort({ createdAt: -1 }); 
-
-    if (pending) {
-      return NextResponse.json({ status: true, data: pending });
-    } else {
-      return NextResponse.json({ status: false, message: "No pending record" });
+    if (!propertyId || !userId || !section) {
+      return NextResponse.json({
+        status: false,
+        message: "Missing propertyId, userId, or section",
+      });
     }
-  } catch (error) {
-    return NextResponse.json({ status: false, message: "Error checking history" });
+
+    const pendingRequest = await InfoHistoryModel.findOne({
+      propertyId,
+      userId,
+      section,
+      status: "pending",
+    });
+
+    if (!pendingRequest) {
+      return NextResponse.json({
+        status: false,
+        message: "No pending request found",
+      });
+    }
+
+    return NextResponse.json({
+      status: true,
+      message: "Pending request found",
+      data: pendingRequest,
+    });
+  } catch (error: any) {
+    console.error("Error fetching pending request:", error);
+    return NextResponse.json({
+      status: false,
+      message: "Failed to fetch pending request",
+      error: error.message,
+    });
   }
 }

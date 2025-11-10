@@ -6,7 +6,7 @@ const infoHistorySchema = new Schema({
   section: { 
       type: String, 
       required: true, 
-      enum: ["basicInfo", "location", "photos", "amenities", "policy", "pricing"] 
+      enum: ["basicInfo", "location","distance", "photos", "amenities", "policy", "pricing"] 
     },
   changes: [
     {

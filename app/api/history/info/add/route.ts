@@ -1,13 +1,14 @@
 import dbConnect from "@/lib/db";
 import PropertyModel from "@/model/property.model";
-import historyModel from "@/model/infohistory.model";
+import InfoHistoryModel from "@/model/infohistory.model";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     await dbConnect();
 
-    const { propertyId, userId, newData, section } = await req.json();
+    const body = await req.json();
+    const { propertyId, userId, section, newData, changes } = body;
 
     if (!propertyId || !userId || !section) {
       return NextResponse.json({
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 🔹 Check property
+    // 🔹 Validate Property
     const existing = await PropertyModel.findById(propertyId);
     if (!existing) {
       return NextResponse.json({
@@ -25,25 +26,34 @@ export async function POST(req: Request) {
       });
     }
 
-    // 🔹 Detect changes
-    const changes: any[] = [];
-    Object.keys(newData).forEach((key) => {
-      const oldValue = existing[key];
-      const newValue = newData[key];
-      if (String(oldValue ?? "") !== String(newValue ?? "")) {
-        changes.push({ field: key, oldValue, newValue });
-      }
-    });
+    let finalChanges = [];
 
-    if (changes.length === 0) {
+    // ✅ 1️⃣ If frontend sends manual `changes`, use that directly
+    if (Array.isArray(changes) && changes.length > 0) {
+      finalChanges = changes;
+    }
+    // ✅ 2️⃣ Otherwise, compute diffs normally for newData
+    else if (newData && typeof newData === "object") {
+      Object.keys(newData).forEach((key) => {
+        const oldValue = existing[key];
+        const newValue = newData[key];
+
+        // Handle nested arrays or objects by comparing JSON strings
+        if (JSON.stringify(oldValue ?? "") !== JSON.stringify(newValue ?? "")) {
+          finalChanges.push({ field: key, oldValue, newValue });
+        }
+      });
+    }
+
+    if (finalChanges.length === 0) {
       return NextResponse.json({
         status: false,
         message: "No changes detected",
       });
     }
 
-    // 🔹 Check if a pending record already exists for same section
-    const existingHistory = await historyModel.findOne({
+    // 🔹 Check for existing pending record in same section
+    const existingHistory = await InfoHistoryModel.findOne({
       propertyId,
       userId,
       section,
@@ -54,7 +64,7 @@ export async function POST(req: Request) {
 
     if (existingHistory) {
       // ✅ Update existing pending request
-      existingHistory.changes = changes;
+      existingHistory.changes = finalChanges;
       existingHistory.updatedAt = new Date();
       history = await existingHistory.save();
 
@@ -65,12 +75,12 @@ export async function POST(req: Request) {
       });
     }
 
-    // ✅ Otherwise create a new request
-    history = await historyModel.create({
+    // ✅ Otherwise create new
+    history = await InfoHistoryModel.create({
       propertyId,
       userId,
       section,
-      changes,
+      changes: finalChanges,
       status: "pending",
     });
 
